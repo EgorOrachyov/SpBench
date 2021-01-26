@@ -56,22 +56,6 @@ namespace benchmark {
         int mSamplesCount = 0;
     };
 
-    struct TimeScope {
-    public:
-        explicit TimeScope(TimeQuery &query) : mTimeQuery(query) {
-            mTimer.start();
-        }
-
-        ~TimeScope() {
-            mTimer.end();
-            mTimeQuery.addTimeSample(mTimer.getElapsedTimeMs());
-        }
-
-    private:
-        Timer mTimer;
-        TimeQuery &mTimeQuery;
-    };
-
     class BenchmarkBase {
     protected:
 
@@ -136,11 +120,15 @@ namespace benchmark {
                 TimeQuery timeQuery;
 
                 for (auto iterationIdx = 0; iterationIdx < iterationsCount; iterationIdx++) {
+                    setupIteration(experimentIdx, iterationIdx);
+
                     Timer timer; {
                         timer.start();
                         execIteration(experimentIdx, iterationIdx);
                         timer.end();
                     }
+
+                    tearDownIteration(experimentIdx, iterationIdx);
 
                     double elapsedTimeMs = timer.getElapsedTimeMs();
 

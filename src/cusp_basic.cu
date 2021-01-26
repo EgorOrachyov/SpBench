@@ -5,7 +5,7 @@
 // The original example is https://cusplibrary.github.io/md_quickstart.html
 
 #include <cuda.h>
-#include <cusp_fix.hpp>
+#include <cusp_compiler_fence.hpp>
 
 #include <cusp/hyb_matrix.h>
 #include <cusp/monitor.h>

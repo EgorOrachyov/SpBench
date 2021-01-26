@@ -51,6 +51,19 @@ if (BENCH_WITH_CUSP)
     list(APPEND TARGETS cusp_mult_add_float)
 endif()
 
+# Some fancy stuff here
 foreach(TARGET ${TARGETS})
     message(STATUS "Build target benchmark ${TARGET}")
 endforeach()
+
+# Copy data into build directory
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/data/ DESTINATION ${CMAKE_BINARY_DIR}/data/)
+
+# Unpack data for benchmarks into build directory
+add_custom_target(unzip_dataset ALL)
+add_custom_command(TARGET unzip_dataset PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_LIST_DIR}/dataset/dataset.zip
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/data
+        DEPENDS ${CMAKE_SOURCE_DIR}/dataset/dataset.zip
+        COMMENT "Unpacking benchmark dataset from dataset.zip"
+        VERBATIM)
