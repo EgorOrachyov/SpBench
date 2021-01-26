@@ -19,7 +19,7 @@ namespace benchmark {
             argsProcessor.parse(argc, argv);
             assert(argsProcessor.isParsed());
 
-            benchmarkName = "Multiply-Add";
+            benchmarkName = "Cubool-Multiply-Add";
             experimentsCount = argsProcessor.getExperimentsCount();
         }
 

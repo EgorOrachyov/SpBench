@@ -36,19 +36,26 @@ if (BENCH_WITH_CUSP)
     add_library(cusp INTERFACE)
     target_include_directories(cusp INTERFACE ${CMAKE_CURRENT_LIST_DIR}/thirdparty/cusp)
 
+    set(CUSP_TARGETS)
+
     add_executable(cusp_basic src/cusp_basic.cu)
-    target_link_libraries(cusp_basic PUBLIC cusp)
-    target_link_libraries(cusp_basic PUBLIC sp_bench_base)
+    add_executable(cusp_mult_add src/cusp_multiply_add.cu)
+    list(APPEND CUSP_TARGETS cusp_basic cusp_mult_add)
 
-    target_compile_features(cusp_basic PUBLIC cxx_std_14)
+    foreach(CUSP_TARGET ${CUSP_TARGETS})
+        target_link_libraries(${CUSP_TARGET} PUBLIC cusp)
+        target_link_libraries(${CUSP_TARGET} PUBLIC sp_bench_base)
 
-    set_target_properties(cusp_basic PROPERTIES CXX_STANDARD 17)
-    set_target_properties(cusp_basic PROPERTIES CXX_STANDARD_REQUIRED ON)
-    set_target_properties(cusp_basic PROPERTIES CUDA_STANDARD 14)
-    set_target_properties(cusp_basic PROPERTIES CUDA_STANDARD_REQUIRED ON)
-    set_target_properties(cusp_basic PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+        target_compile_features(${CUSP_TARGET} PUBLIC cxx_std_14)
 
-    list(APPEND TARGETS cusp_mult_add_float)
+        set_target_properties(${CUSP_TARGET} PROPERTIES CXX_STANDARD 17)
+        set_target_properties(${CUSP_TARGET} PROPERTIES CXX_STANDARD_REQUIRED ON)
+        set_target_properties(${CUSP_TARGET} PROPERTIES CUDA_STANDARD 14)
+        set_target_properties(${CUSP_TARGET} PROPERTIES CUDA_STANDARD_REQUIRED ON)
+        set_target_properties(${CUSP_TARGET} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+        list(APPEND TARGETS ${CUSP_TARGET})
+    endforeach()
 endif()
 
 # Some fancy stuff here
