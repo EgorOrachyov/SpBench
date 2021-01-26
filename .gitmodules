@@ -1,3 +1,6 @@
 [submodule "thirdparty/cubool"]
 	path = thirdparty/cubool
 	url = https://github.com/JetBrains-Research/cuBool.git
+[submodule "thirdparty/cusp"]
+	path = thirdparty/cusp
+	url = https://github.com/cusplibrary/cusplibrary.git
