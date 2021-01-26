@@ -1,0 +1,3 @@
+[submodule "thirdparty/cubool"]
+	path = thirdparty/cubool
+	url = https://github.com/JetBrains-Research/cuBool.git

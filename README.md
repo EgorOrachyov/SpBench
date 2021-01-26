@@ -1,2 +1,8 @@
 # SpBench
-Benchmarks for sparse lineral algebra libraries for GPGPU
+
+Benchmarks for sparse linear algebra libraries for GPGPU.
+
+## Dataset
+
+| Matrix file name  | Type       | Size        | Nnz         |
+| :---              | :---       | :---        | :---        |
