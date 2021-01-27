@@ -4,7 +4,8 @@ project(SpBench LANGUAGES CXX CUDA)
 # Exposed options. Disable something, if do not want to build cuda or cl stuff.
 option(BENCH_WITH_CUBOOL   "Add cubool lib and related benchmarks" ON)
 option(BENCH_WITH_CUSP     "Add cusp lib and related benchmarks" ON)
-option(BENCH_WITH_CLSPARSE "Add cusp lib and related benchmarks" ON)
+option(BENCH_WITH_CUSPARSE "Add cuSPARSE lib and related benchmarks" ON)
+option(BENCH_WITH_CLSPARSE "Add clSPARSE lib and related benchmarks" ON)
 
 add_library(sp_bench_base INTERFACE)
 target_include_directories(sp_bench_base INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src)
@@ -59,6 +60,30 @@ if (BENCH_WITH_CUSP)
         set_target_properties(${CUSP_TARGET} PROPERTIES CUDA_STANDARD 14)
         set_target_properties(${CUSP_TARGET} PROPERTIES CUDA_STANDARD_REQUIRED ON)
         set_target_properties(${CUSP_TARGET} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+        list(APPEND TARGETS ${CUSP_TARGET})
+    endforeach()
+endif()
+
+if (BENCH_WITH_CUSPARSE)
+    set(CUSPARSE_TARGETS)
+
+    find_package(CUDA REQUIRED)
+
+    add_executable(cusparse_mult src/cusparse_multiply.cu)
+    add_executable(cusparse_add src/cusparse_add.cu)
+    list(APPEND CUSPARSE_TARGETS cusparse_add cusparse_mult)
+
+    foreach(CUSPARSE_TARGET ${CUSPARSE_TARGETS})
+        target_link_libraries(${CUSPARSE_TARGET} PUBLIC sp_bench_base)
+        target_link_libraries(${CUSPARSE_TARGET} PUBLIC cusparse)
+
+        target_compile_features(${CUSPARSE_TARGET} PUBLIC cxx_std_14)
+        set_target_properties(${CUSPARSE_TARGET} PROPERTIES CXX_STANDARD 17)
+        set_target_properties(${CUSPARSE_TARGET} PROPERTIES CXX_STANDARD_REQUIRED ON)
+        set_target_properties(${CUSPARSE_TARGET} PROPERTIES CUDA_STANDARD 14)
+        set_target_properties(${CUSPARSE_TARGET} PROPERTIES CUDA_STANDARD_REQUIRED ON)
+        set_target_properties(${CUSPARSE_TARGET} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
         list(APPEND TARGETS ${CUSP_TARGET})
     endforeach()
