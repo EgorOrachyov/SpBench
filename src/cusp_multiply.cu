@@ -1,5 +1,5 @@
 //
-// Created by Egor.Orachev on 26.01.2021.
+// Created by Egor.Orachev on 27.01.2021.
 //
 
 #include <benchmark_base.hpp>
@@ -41,14 +41,14 @@ namespace benchmark {
     typedef char value_type;
     static const value_type t = true;
 
-    class MultiplyAdd: public BenchmarkBase {
+    class Multiply: public BenchmarkBase {
     public:
 
-        MultiplyAdd(int argc, const char** argv) {
+        Multiply(int argc, const char** argv) {
             argsProcessor.parse(argc, argv);
             assert(argsProcessor.isParsed());
 
-            benchmarkName = "Cusp-Multiply-Add";
+            benchmarkName = "Cusp-Multiply";
             experimentsCount = argsProcessor.getExperimentsCount();
         }
 
@@ -111,9 +111,6 @@ namespace benchmark {
             // compute R = M * M
             cusp::multiply(matrix, matrix, R, identity, combine, reduce);
 
-            // compute R = R + M
-            cusp::elementwise(matrix, R, R, reduce);
-
 #ifdef BENCH_DEBUG
             log << "   Result matrix: size " << R.num_rows << " x " << R.num_cols
                 << " nvals " << R.num_entries << std::endl;
@@ -140,7 +137,7 @@ namespace benchmark {
 }
 
 int main(int argc, const char** argv) {
-    benchmark::MultiplyAdd multiplyAdd(argc, argv);
-    multiplyAdd.runBenchmark();
+    benchmark::Multiply multiply(argc, argv);
+    multiply.runBenchmark();
     return 0;
 }

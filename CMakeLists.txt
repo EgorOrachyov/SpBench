@@ -20,16 +20,19 @@ if (BENCH_WITH_CUBOOL)
     set(CUBOOL_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     add_subdirectory(thirdparty/cubool)
 
+    set(CUBOOl_TARGETS)
+    add_executable(cubool_mult src/cubool_multiply.cpp)
+    add_executable(cubool_add src/cubool_add.cpp)
     add_executable(cubool_mult_add src/cubool_multiply_add.cpp)
-    target_link_libraries(cubool_mult_add PUBLIC cubool)
-    target_link_libraries(cubool_mult_add PUBLIC sp_bench_base)
-
     add_executable(cubool_tc src/cubool_transitive_closure.cpp)
-    target_link_libraries(cubool_tc PUBLIC cubool)
-    target_link_libraries(cubool_tc PUBLIC sp_bench_base)
+    list(APPEND CUBOOl_TARGETS cubool_mult cubool_add cubool_mult_add cubool_tc)
 
-    list(APPEND TARGETS cubool_mult_add)
-    list(APPEND TARGETS cubool_tc)
+    foreach(CUBOOL_TARGET ${CUBOOl_TARGETS})
+        target_link_libraries(${CUBOOL_TARGET} PUBLIC cubool)
+        target_link_libraries(${CUBOOL_TARGET} PUBLIC sp_bench_base)
+
+        list(APPEND TARGETS ${CUBOOL_TARGET})
+    endforeach()
 endif()
 
 # CUSP specifics
@@ -40,8 +43,10 @@ if (BENCH_WITH_CUSP)
     set(CUSP_TARGETS)
 
     add_executable(cusp_basic src/cusp_basic.cu)
+    add_executable(cusp_mult src/cusp_multiply.cu)
+    add_executable(cusp_add src/cusp_add.cu)
     add_executable(cusp_mult_add src/cusp_multiply_add.cu)
-    list(APPEND CUSP_TARGETS cusp_basic cusp_mult_add)
+    list(APPEND CUSP_TARGETS cusp_basic cusp_mult cusp_add cusp_mult_add)
 
     foreach(CUSP_TARGET ${CUSP_TARGETS})
         target_link_libraries(${CUSP_TARGET} PUBLIC cusp)
@@ -71,17 +76,25 @@ if (BENCH_WITH_CLSPARSE)
     set(CLSPARSE_TARGETS)
 
     add_executable(clsparse_basic src/clsparse_basic.cpp)
-    add_executable(clsparse_mult_add src/clsparse_multiply_add.cpp)
-    list(APPEND CLSPARSE_TARGETS clsparse_basic clsparse_mult_add)
+    add_executable(clsparse_mult src/clsparse_multiply.cpp)
+    list(APPEND CLSPARSE_TARGETS clsparse_basic clsparse_mult)
 
     set(clSPARSER_PATH ${CMAKE_BINARY_DIR}/thirdparty/clSPARSE/clSPARSE-build)
 
     find_package(OpenCL REQUIRED)
 
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(clSPARSE_LIB_NAME clSPARSEd)
+    elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(clSPARSE_LIB_NAME clSPARSEr)
+    else()
+        message(SEND_ERROR "Unknown build type")
+    endif()
+
     foreach(CLSPARSE_TARGET ${CLSPARSE_TARGETS})
         target_link_libraries(${CLSPARSE_TARGET} PUBLIC sp_bench_base)
         target_link_libraries(${CLSPARSE_TARGET} PUBLIC OpenCL)
-        target_link_libraries(${CLSPARSE_TARGET} PUBLIC clSPARSEd)
+        target_link_libraries(${CLSPARSE_TARGET} PUBLIC ${clSPARSE_LIB_NAME})
         target_link_directories(${CLSPARSE_TARGET} PUBLIC ${clSPARSER_PATH}/library)
         target_include_directories(${CLSPARSE_TARGET} PUBLIC thirdparty/clSPARSE/src/include)
         target_include_directories(${CLSPARSE_TARGET} PUBLIC ${clSPARSER_PATH}/library)

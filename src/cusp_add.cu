@@ -1,5 +1,5 @@
 //
-// Created by Egor.Orachev on 26.01.2021.
+// Created by Egor.Orachev on 27.01.2021.
 //
 
 #include <benchmark_base.hpp>
@@ -41,14 +41,14 @@ namespace benchmark {
     typedef char value_type;
     static const value_type t = true;
 
-    class MultiplyAdd: public BenchmarkBase {
+    class Add: public BenchmarkBase {
     public:
 
-        MultiplyAdd(int argc, const char** argv) {
+        Add(int argc, const char** argv) {
             argsProcessor.parse(argc, argv);
             assert(argsProcessor.isParsed());
 
-            benchmarkName = "Cusp-Multiply-Add";
+            benchmarkName = "Cusp-Add";
             experimentsCount = argsProcessor.getExperimentsCount();
         }
 
@@ -75,7 +75,7 @@ namespace benchmark {
             input = std::move(loader.getMatrix());
 
 #ifdef BENCH_DEBUG
-            std::cout << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
+            std::cout << ">   Load A: \"" << file << "\" isUndirected: " << type << std::endl
                       << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
 
@@ -90,12 +90,20 @@ namespace benchmark {
                 hostData.values[i] = t;
             }
 
-            matrix = std::move(device_matrix_t(hostData));
+            A = std::move(device_matrix_t(hostData));
+
+            thrust::identity<value_type> identity;
+            logic_and<value_type> combine;
+            logic_or<value_type> reduce;
+
+            // compute M2 = M * M
+            cusp::multiply(A, A, A2, identity, combine, reduce);
         }
 
         void tearDownExperiment(size_t experimentIdx) override {
             input = Matrix{};
-            matrix = device_matrix_t{};
+            A = device_matrix_t{};
+            A2 = device_matrix_t{};
         }
 
         void setupIteration(size_t experimentIdx, size_t iterationIdx) override {
@@ -104,15 +112,10 @@ namespace benchmark {
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
             // define multiply functors
-            thrust::identity<value_type> identity;
-            logic_and<value_type> combine;
             logic_or<value_type> reduce;
 
-            // compute R = M * M
-            cusp::multiply(matrix, matrix, R, identity, combine, reduce);
-
-            // compute R = R + M
-            cusp::elementwise(matrix, R, R, reduce);
+            // compute R = A + A2
+            cusp::elementwise(A, A2, R, reduce);
 
 #ifdef BENCH_DEBUG
             log << "   Result matrix: size " << R.num_rows << " x " << R.num_cols
@@ -129,7 +132,8 @@ namespace benchmark {
         typedef cusp::csr_matrix<int, value_type, cusp::device_memory> device_matrix_t;
 
         host_matrix_t hostData;
-        device_matrix_t matrix;
+        device_matrix_t A;
+        device_matrix_t A2;
         device_matrix_t R;
 
         ArgsProcessor argsProcessor;
@@ -140,7 +144,7 @@ namespace benchmark {
 }
 
 int main(int argc, const char** argv) {
-    benchmark::MultiplyAdd multiplyAdd(argc, argv);
-    multiplyAdd.runBenchmark();
+    benchmark::Add add(argc, argv);
+    add.runBenchmark();
     return 0;
 }

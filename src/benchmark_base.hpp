@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include <cassert>
+#include <fstream>
 
 namespace benchmark {
 
@@ -62,6 +63,7 @@ namespace benchmark {
         //////////////////////////////////////////////////
         // Benchmark config
 
+
         /** Name of the benchmark */
         std::string benchmarkName;
         /** Total number of experiments to run */
@@ -98,18 +100,26 @@ namespace benchmark {
         //////////////////////////////////////////////////
         // Exec this to run benchmark
 
+        std::fstream log;
+
         void runBenchmark() {
             assert(experimentsCount > 0);
             assert(results.empty());
 
-            std::cout << "=-=-=-=-=-= RUN: " << benchmarkName << " =-=-=-=-=-=" << std::endl << std::endl;
+            log.open(benchmarkName + ".txt", std::ios_base::out);
+            if (!log.is_open()) {
+                std::cerr << "Failed to open log file" << std::endl;
+                return;
+            }
+
+            log << "=-=-=-=-=-= RUN: " << benchmarkName << " =-=-=-=-=-=" << std::endl << std::endl;
 
             setupBenchmark();
 
             for (auto experimentIdx = 0; experimentIdx < experimentsCount; experimentIdx++) {
                 size_t iterationsCount;
 
-                std::cout << "> Begin experiment: " << experimentIdx << std::endl;
+                log << "> Begin experiment: " << experimentIdx << std::endl;
 
                 setupExperiment(experimentIdx, iterationsCount);
 
@@ -143,7 +153,7 @@ namespace benchmark {
 
                 tearDownExperiment(experimentIdx);
 
-                std::cout << "> End experiment: " << experimentIdx << std::endl
+                log << "> End experiment: " << experimentIdx << std::endl
                           << "> Stats: " << std::endl
                           << ">  iterations = " << perExperiment.iterationsCount << std::endl
                           << ">  total      = " << perExperiment.totalTime << " ms" << std::endl
@@ -155,7 +165,7 @@ namespace benchmark {
 
             tearDownBenchmark();
 
-            std::cout << "=-=-=-=-=-= FINISH: " << benchmarkName << " =-=-=-=-=-=" << std::endl;
+            log << "=-=-=-=-=-= FINISH: " << benchmarkName << " =-=-=-=-=-=" << std::endl;
         }
 
     };

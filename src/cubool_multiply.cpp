@@ -1,5 +1,5 @@
 //
-// Created by Egor.Orachev on 26.01.2021.
+// Created by Egor.Orachev on 27.01.2021.
 //
 
 #include <benchmark_base.hpp>
@@ -12,14 +12,14 @@
 
 namespace benchmark {
 
-    class MultiplyAdd: public BenchmarkBase {
+    class Multiply: public BenchmarkBase {
     public:
 
-        MultiplyAdd(int argc, const char** argv) {
+        Multiply(int argc, const char** argv) {
             argsProcessor.parse(argc, argv);
             assert(argsProcessor.isParsed());
 
-            benchmarkName = "Cubool-Multiply-Add";
+            benchmarkName = "Cubool-Multiply";
             experimentsCount = argsProcessor.getExperimentsCount();
         }
 
@@ -59,14 +59,7 @@ namespace benchmark {
             std::cout << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
                       << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
-        }
 
-        void tearDownExperiment(size_t experimentIdx) override {
-            input = Matrix{};
-            assert(matrix == nullptr);
-        }
-
-        void setupIteration(size_t experimentIdx, size_t iterationIdx) override {
             CuBoolIndex_t n = input.nrows;
             assert(input.nrows == input.ncols);
 
@@ -77,8 +70,25 @@ namespace benchmark {
             assert(status == CUBOOL_STATUS_SUCCESS);
         }
 
+        void tearDownExperiment(size_t experimentIdx) override {
+            input = Matrix{};
+
+            status = CuBool_Matrix_Free(instance, matrix);
+            assert(status == CUBOOL_STATUS_SUCCESS);
+
+            matrix = nullptr;
+        }
+
+        void setupIteration(size_t experimentIdx, size_t iterationIdx) override {
+            CuBoolIndex_t n = input.nrows;
+            assert(input.nrows == input.ncols);
+
+            status = CuBool_Matrix_New(instance, &result, n, n);
+            assert(status == CUBOOL_STATUS_SUCCESS);
+        }
+
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
-            status = CuBool_MxM(instance, matrix, matrix, matrix);
+            status = CuBool_MxM(instance, result, matrix, matrix);
             assert(status == CUBOOL_STATUS_SUCCESS);
         }
 
@@ -88,23 +98,23 @@ namespace benchmark {
                 CuBoolIndex_t nrows;
                 CuBoolIndex_t ncols;
 
-                status = CuBool_Matrix_Nrows(instance, matrix, &nrows);
+                status = CuBool_Matrix_Nrows(instance, result, &nrows);
                 assert(status == CUBOOL_STATUS_SUCCESS);
 
-                status = CuBool_Matrix_Ncols(instance, matrix, &ncols);
+                status = CuBool_Matrix_Ncols(instance, result, &ncols);
                 assert(status == CUBOOL_STATUS_SUCCESS);
 
-                status = CuBool_Matrix_Nvals(instance, matrix, &nvals);
+                status = CuBool_Matrix_Nvals(instance, result, &nvals);
                 assert(status == CUBOOL_STATUS_SUCCESS);
 
 #ifdef BENCH_DEBUG
                 log << "   Result matrix: size: " << nrows << " x " << ncols << " nvals: " << nvals << std::endl;
 #endif // BENCH_DEBUG
 
-                status = CuBool_Matrix_Free(instance, matrix);
+                status = CuBool_Matrix_Free(instance, result);
                 assert(status == CUBOOL_STATUS_SUCCESS);
 
-                matrix = nullptr;
+                result = nullptr;
             }
         }
 
@@ -115,6 +125,7 @@ namespace benchmark {
 
         CuBoolInstance instance = nullptr;
         CuBoolMatrix matrix = nullptr;
+        CuBoolMatrix result = nullptr;
         CuBoolStatus status = CUBOOL_STATUS_SUCCESS;
 
         Matrix input;
@@ -124,7 +135,7 @@ namespace benchmark {
 }
 
 int main(int argc, const char** argv) {
-    benchmark::MultiplyAdd multiplyAdd(argc, argv);
-    multiplyAdd.runBenchmark();
+    benchmark::Multiply multiply(argc, argv);
+    multiply.runBenchmark();
     return 0;
 }
