@@ -1,0 +1,94 @@
+# ########################################################################
+# Copyright 2015 Advanced Micro Devices, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ########################################################################
+
+include( GenerateExportHeader )
+
+# List the names of the files to compile for the external client . . .
+set( clsparseTimer.Source
+	clsparseTimer-host.cpp
+	clsparseTimer-device.cpp
+	clsparseTimer-extern.cpp
+ )
+
+# Windows only uses dllmain
+if( MSVC )
+	list( APPEND clsparseTimer.Source dllmain.cpp )
+endif( )
+
+set( clsparseTimer.Headers
+	${PROJECT_SOURCE_DIR}/include/clSPARSE.h
+	${PROJECT_SOURCE_DIR}/include/clsparseTimer.hpp
+	${PROJECT_SOURCE_DIR}/include/clsparseTimer-extern.hpp
+	clsparseTimer-host.hpp
+	clsparseTimer-device.hpp
+ )
+
+set( clsparseTimer.Files ${clsparseTimer.Source} ${clsparseTimer.Headers} )
+
+if( CMAKE_COMPILER_IS_GNUCXX OR ( CMAKE_CXX_COMPILER_ID MATCHES "Clang" ) )
+  add_definitions( -std=c++11 )
+endif( )
+
+if( BUILD_CLVERSION VERSION_EQUAL "2.0" )
+    add_definitions( -DBUILD_CLVERSION=200 )
+elseif( BUILD_CLVERSION VERSION_EQUAL "1.2" )
+    add_definitions( -DBUILD_CLVERSION=120 )
+elseif( BUILD_CLVERSION VERSION_EQUAL "1.1" )
+    add_definitions( -DBUILD_CLVERSION=110 )
+endif( )
+
+# Include standard OpenCL headers
+include_directories(
+	${OPENCL_INCLUDE_DIRS}
+    ${CL2HPP_INCLUDE_DIRECTORY}
+	${PROJECT_BINARY_DIR}/include
+	${PROJECT_BINARY_DIR}/library
+	${PROJECT_BINARY_DIR}/clsparseTimer
+	../include
+	)
+
+add_library( clsparseTimer SHARED ${clsparseTimer.Files} )
+set_target_properties( clsparseTimer PROPERTIES VERSION ${clSPARSE_VERSION} )
+set_target_properties( clsparseTimer PROPERTIES SOVERSION ${clSPARSE_SOVERSION} )
+set_target_properties( clsparseTimer PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/staging" )
+set_target_properties( clsparseTimer PROPERTIES CXX_VISIBILITY_PRESET hidden)
+set_target_properties( clsparseTimer PROPERTIES VISIBILITY_INLINES_HIDDEN ON)
+target_link_libraries( clsparseTimer ${OPENCL_LIBRARIES} )
+
+if(NOT USE_SYSTEM_CL2HPP)
+    add_dependencies(clsparseTimer cl2hpp)
+endif(NOT USE_SYSTEM_CL2HPP)
+
+# Package that helps me set visibility for function names exported from shared library
+GENERATE_EXPORT_HEADER( clsparseTimer )
+
+if( UNIX AND NOT APPLE )
+	# This library dependency is brought in by the high precision timer available in linux
+	target_link_libraries( clsparseTimer -lrt )
+endif( )
+
+# CPack configuration; include the executable into the package
+install( TARGETS clsparseTimer
+  RUNTIME DESTINATION bin${SUFFIX_BIN}
+  LIBRARY DESTINATION lib${SUFFIX_LIB}
+  ARCHIVE DESTINATION lib${SUFFIX_LIB}
+)
+
+install( FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/clsparsetimer_export.h
+  DESTINATION
+    include
+)

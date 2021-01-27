@@ -4,6 +4,3 @@
 [submodule "thirdparty/cusp"]
 	path = thirdparty/cusp
 	url = https://github.com/cusplibrary/cusplibrary.git
-[submodule "thirdparty/clSPARSE"]
-	path = thirdparty/clSPARSE
-	url = https://github.com/clMathLibraries/clSPARSE.git
