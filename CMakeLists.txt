@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 project(SpBench LANGUAGES CXX CUDA)
 
 # Exposed options. Disable something, if do not want to build cuda or cl stuff.
