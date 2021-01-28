@@ -32,7 +32,7 @@ namespace benchmark {
         void setupBenchmark() override {
             CuBoolInstanceDesc desc{};
             desc.errorCallback = {nullptr, messageCallback };
-            desc.memoryType = CUBOOL_GPU_MEMORY_TYPE_GENERIC;
+            desc.memoryType = CUBOOL_GPU_MEMORY_TYPE_MANAGED;
 
             status = CuBool_Instance_New(&desc, &instance);
             assert(status == CUBOOL_STATUS_SUCCESS);
