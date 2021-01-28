@@ -191,7 +191,7 @@ namespace benchmark {
 }
 
 int main(int argc, const char** argv) {
-    benchmark::Multiply multiplyAdd(argc, argv);
-    multiplyAdd.runBenchmark();
+    benchmark::Multiply multiply(argc, argv);
+    multiply.runBenchmark();
     return 0;
 }

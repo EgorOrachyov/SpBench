@@ -78,6 +78,7 @@ namespace benchmark {
             double averageTime = 0.0;
             double minIterationTime = 0.0;
             double maxIterationTime = 0.0;
+            std::vector<double> samplesMs;
         };
 
         std::vector<PerExperiment> results;
@@ -126,6 +127,7 @@ namespace benchmark {
                 PerExperiment perExperiment;
                 perExperiment.iterationsCount = iterationsCount;
                 perExperiment.minIterationTime = std::numeric_limits<double>::max();
+                perExperiment.samplesMs.reserve(iterationsCount);
 
                 TimeQuery timeQuery;
 
@@ -145,11 +147,11 @@ namespace benchmark {
                     timeQuery.addTimeSample(elapsedTimeMs);
                     perExperiment.maxIterationTime = std::max(perExperiment.maxIterationTime, elapsedTimeMs);
                     perExperiment.minIterationTime = std::min(perExperiment.minIterationTime, elapsedTimeMs);
+                    perExperiment.samplesMs.push_back(elapsedTimeMs);
                 }
 
                 perExperiment.totalTime = timeQuery.getTotalTimeMS();
                 perExperiment.averageTime = timeQuery.getAverageTimeMs();
-                results.push_back(perExperiment);
 
                 tearDownExperiment(experimentIdx);
 
@@ -159,8 +161,17 @@ namespace benchmark {
                           << ">  total      = " << perExperiment.totalTime << " ms" << std::endl
                           << ">  average    = " << perExperiment.averageTime << " ms" << std::endl
                           << ">  min        = " << perExperiment.minIterationTime << " ms" << std::endl
-                          << ">  max        = " << perExperiment.maxIterationTime << " ms" << std::endl << std::endl;
+                          << ">  max        = " << perExperiment.maxIterationTime << " ms" << std::endl;
 
+                log << ">  samples: " << std::endl;
+                auto id = 0;
+                for (auto sample: perExperiment.samplesMs) {
+                    log << ">   " << id << ": " << sample << " ms" << std::endl;
+                    id += 1;
+                }
+
+                log << std::endl;
+                results.push_back(std::move(perExperiment));
             }
 
             tearDownBenchmark();

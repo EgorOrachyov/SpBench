@@ -6,6 +6,7 @@ option(BENCH_WITH_CUBOOL   "Add cubool lib and related benchmarks" ON)
 option(BENCH_WITH_CUSP     "Add cusp lib and related benchmarks" ON)
 option(BENCH_WITH_CUSPARSE "Add cuSPARSE lib and related benchmarks" ON)
 option(BENCH_WITH_CLSPARSE "Add clSPARSE lib and related benchmarks" ON)
+option(BENCH_WITH_CLBOOL   "Add clbool lib and related benchmarks" ON)
 
 add_library(sp_bench_base INTERFACE)
 target_include_directories(sp_bench_base INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src)
@@ -130,6 +131,27 @@ if (BENCH_WITH_CLSPARSE)
         set_target_properties(${CLSPARSE_TARGET} PROPERTIES CXX_STANDARD_REQUIRED ON)
 
         list(APPEND TARGETS ${CLSPARSE_TARGET})
+    endforeach()
+endif()
+
+if (BENCH_WITH_CLBOOL)
+    add_subdirectory(thirdparty/clbool)
+
+    set(CLBOOL_TARGETS)
+
+    add_executable(clbool_mult src/clbool_multiply.cpp)
+    add_executable(clbool_add src/clbool_add.cpp)
+    list(APPEND CLBOOL_TARGETS clbool_mult clbool_add)
+
+    foreach(CLBOOL_TARGET ${CLBOOL_TARGETS})
+        target_link_libraries(${CLBOOL_TARGET} PUBLIC sp_bench_base)
+        target_link_libraries(${CLBOOL_TARGET} PUBLIC clbool)
+        target_compile_features(${CLBOOL_TARGET} PUBLIC cxx_std_14)
+
+        set_target_properties(${CLBOOL_TARGET} PROPERTIES CXX_STANDARD 17)
+        set_target_properties(${CLBOOL_TARGET} PROPERTIES CXX_STANDARD_REQUIRED ON)
+
+        list(APPEND TARGETS ${CLBOOL_TARGET})
     endforeach()
 endif()
 
