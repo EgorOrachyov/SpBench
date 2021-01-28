@@ -12,6 +12,7 @@
 #include <vector>
 #include <cassert>
 #include <fstream>
+#include <cmath>
 
 namespace benchmark {
 
@@ -78,6 +79,7 @@ namespace benchmark {
             double averageTime = 0.0;
             double minIterationTime = 0.0;
             double maxIterationTime = 0.0;
+            double standardDeviationMs = 0.0f;
             std::vector<double> samplesMs;
         };
 
@@ -153,15 +155,26 @@ namespace benchmark {
                 perExperiment.totalTime = timeQuery.getTotalTimeMS();
                 perExperiment.averageTime = timeQuery.getAverageTimeMs();
 
+                double sd;
+                for (auto sample: perExperiment.samplesMs) {
+                    auto diff = (sample - perExperiment.averageTime);
+                    sd += diff * diff;
+                }
+
+                assert(iterationsCount > 1);
+                sd = sd / (double)(iterationsCount - 1);
+                perExperiment.standardDeviationMs = std::sqrt(sd);
+
                 tearDownExperiment(experimentIdx);
 
                 log << "> End experiment: " << experimentIdx << std::endl
-                          << "> Stats: " << std::endl
-                          << ">  iterations = " << perExperiment.iterationsCount << std::endl
-                          << ">  total      = " << perExperiment.totalTime << " ms" << std::endl
-                          << ">  average    = " << perExperiment.averageTime << " ms" << std::endl
-                          << ">  min        = " << perExperiment.minIterationTime << " ms" << std::endl
-                          << ">  max        = " << perExperiment.maxIterationTime << " ms" << std::endl;
+                    << "> Stats: " << std::endl
+                    << ">  iterations = " << perExperiment.iterationsCount << std::endl
+                    << ">  total      = " << perExperiment.totalTime << " ms" << std::endl
+                    << ">  average    = " << perExperiment.averageTime << " ms" << std::endl
+                    << ">  sd         = " << perExperiment.standardDeviationMs << " ms" << std::endl
+                    << ">  min        = " << perExperiment.minIterationTime << " ms" << std::endl
+                    << ">  max        = " << perExperiment.maxIterationTime << " ms" << std::endl;
 
                 log << ">  samples: " << std::endl;
                 auto id = 0;
