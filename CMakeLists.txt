@@ -118,6 +118,7 @@ if (BENCH_WITH_CLSPARSE)
     endif()
 
     foreach(CLSPARSE_TARGET ${CLSPARSE_TARGETS})
+        add_dependencies(${CLSPARSE_TARGET} clSPARSE)
         target_link_libraries(${CLSPARSE_TARGET} PUBLIC sp_bench_base)
         target_link_libraries(${CLSPARSE_TARGET} PUBLIC OpenCL)
         target_link_libraries(${CLSPARSE_TARGET} PUBLIC ${clSPARSE_LIB_NAME})
@@ -171,3 +172,6 @@ add_custom_command(TARGET unzip_dataset PRE_BUILD
         DEPENDS ${CMAKE_SOURCE_DIR}/dataset/dataset.zip
         COMMENT "Unpacking benchmark dataset from dataset.zip"
         VERBATIM)
+
+add_library(benchmark INTERFACE)
+add_dependencies(benchmark ${TARGETS} unzip_dataset)

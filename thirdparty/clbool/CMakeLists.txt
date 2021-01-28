@@ -54,6 +54,7 @@ link_directories(${OpenCL_LIBRARY})
 #add_executable (sparse-boolean-matrix-operations src/example/cl/clion_defines.cl src/example/convolution.cpp)
 #target_link_libraries (sparse-boolean-matrix-operations ${OpenCL_LIBRARY})
 
+if (BUILD_EXECUTABLE)
 add_executable(sparse-boolean-matrix-operations
         src/library_classes/matrix_coo.cpp
 
@@ -116,6 +117,7 @@ foreach (cl_file ${CL_FILES})
             ARGS -E copy ${cl_file} ${PROJECT_BINARY_DIR}/.
     )
 endforeach (cl_file)
+endif()
 
 foreach (cl_file ${CL_FILES})
     add_custom_command(TARGET clbool
