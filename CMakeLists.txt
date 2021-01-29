@@ -2,11 +2,12 @@ cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
 project(SpBench LANGUAGES CXX CUDA)
 
 # Exposed options. Disable something, if do not want to build cuda or cl stuff.
-option(BENCH_WITH_CUBOOL   "Add cubool lib and related benchmarks" ON)
-option(BENCH_WITH_CUSP     "Add cusp lib and related benchmarks" ON)
-option(BENCH_WITH_CUSPARSE "Add cuSPARSE lib and related benchmarks" ON)
-option(BENCH_WITH_CLSPARSE "Add clSPARSE lib and related benchmarks" ON)
-option(BENCH_WITH_CLBOOL   "Add clbool lib and related benchmarks" ON)
+option(BENCH_WITH_CUBOOL      "Add cubool lib and related benchmarks" ON)
+option(BENCH_WITH_CUSP        "Add cusp lib and related benchmarks" ON)
+option(BENCH_WITH_CUSPARSE    "Add cuSPARSE lib and related benchmarks" ON)
+option(BENCH_WITH_CLSPARSE    "Add clSPARSE lib and related benchmarks" ON)
+option(BENCH_WITH_CLBOOL      "Add clbool lib and related benchmarks" ON)
+option(BENCH_WITH_SUITESPARSE "Add GraphBLAS:SuiteSparse lib and related benchmarks" ON)
 
 add_library(sp_bench_base INTERFACE)
 target_include_directories(sp_bench_base INTERFACE ${CMAKE_CURRENT_LIST_DIR}/src)
@@ -153,6 +154,27 @@ if (BENCH_WITH_CLBOOL)
         set_target_properties(${CLBOOL_TARGET} PROPERTIES CXX_STANDARD_REQUIRED ON)
 
         list(APPEND TARGETS ${CLBOOL_TARGET})
+    endforeach()
+endif()
+
+if (BENCH_WITH_SUITESPARSE)
+    set(SUITESPARSE_TARGETS)
+
+    add_executable(suitesparse_mult src/suitesparse_multiply.cpp)
+    add_executable(suitesparse_add src/suitesparse_add.cpp)
+    list(APPEND SUITESPARSE_TARGETS suitesparse_mult suitesparse_add)
+
+    foreach(SUITESPARSE_TARGET ${SUITESPARSE_TARGETS})
+        target_link_libraries(${SUITESPARSE_TARGET} PUBLIC sp_bench_base)
+        target_link_libraries(${SUITESPARSE_TARGET} PUBLIC graphblas)
+
+        # The graphblas is installed here, must explicitly add path to be sure, that link will be successful
+        target_link_directories(${SUITESPARSE_TARGET} PUBLIC /usr/local/lib)
+        target_compile_features(${SUITESPARSE_TARGET} PUBLIC cxx_std_14)
+        set_target_properties(${SUITESPARSE_TARGET} PROPERTIES CXX_STANDARD 17)
+        set_target_properties(${SUITESPARSE_TARGET} PROPERTIES CXX_STANDARD_REQUIRED ON)
+
+        list(APPEND TARGETS ${SUITESPARSE_TARGET})
     endforeach()
 endif()
 

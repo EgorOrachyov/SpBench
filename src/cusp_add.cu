@@ -38,7 +38,7 @@ namespace benchmark {
         __host__ __device__ T operator()(const T &lhs, const T &rhs) const {return lhs & rhs;}
     };
 
-    typedef char value_type;
+    typedef bool value_type;
     static const value_type t = true;
 
     class Add: public BenchmarkBase {
@@ -116,14 +116,14 @@ namespace benchmark {
 
             // compute R = A + A2
             cusp::elementwise(A, A2, R, reduce);
+        }
 
+        void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
 #ifdef BENCH_DEBUG
             log << "   Result matrix: size " << R.num_rows << " x " << R.num_cols
                 << " nvals " << R.num_entries << std::endl;
 #endif
-        }
 
-        void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
             R = device_matrix_t{};
         }
 

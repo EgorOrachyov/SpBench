@@ -207,14 +207,14 @@ namespace benchmark {
                     A2.desc, A2.nvals, valuesA2.data().get(), A2.rows.data().get(), A2.cols.data().get(),
                     R.desc, tmp.data().get(), R.rows.data().get(), R.cols.data().get()
             ));
+        }
 
+        void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
 #ifdef BENCH_DEBUG
             log << "   Result matrix: size " << R.n << " x " << R.n
                 << " nvals " << R.nvals << std::endl;
 #endif
-        }
 
-        void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
             CUSPARSE_CHECH(cusparseDestroyMatDescr(R.desc));
             R.release();
         }

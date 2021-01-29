@@ -92,14 +92,14 @@ namespace benchmark {
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
             matrix_addition(*controls, R, A, A2);
+        }
 
+        void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
 #ifdef BENCH_DEBUG
             log << "   Result matrix: size " << R.nRows() << " x " << R.nCols()
                 << " nvals " << R.nnz() << std::endl;
 #endif
-        }
 
-        void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
             R = matrix_coo{};
         }
 

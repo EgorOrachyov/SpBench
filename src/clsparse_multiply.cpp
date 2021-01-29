@@ -156,14 +156,14 @@ namespace benchmark {
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
             Status = clsparseScsrSpGemm(&M, &M, &R, control);
             assert(Status == clsparseStatus::clsparseSuccess);
+        }
 
+        void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
 #ifdef BENCH_DEBUG
             log << "   Result matrix: size " << R.num_rows << " x " << R.num_cols
                 << " nvals " << R.num_nonzeros << std::endl;
 #endif
-        }
 
-        void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
             clReleaseMemObject(R.values);
             clReleaseMemObject(R.col_indices);
             clReleaseMemObject(R.row_pointer);
