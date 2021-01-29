@@ -90,7 +90,7 @@ namespace benchmark {
         }
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
-            GrB_CHECK(GrB_eWiseAdd_Matrix_BinaryOp(R, nullptr, nullptr, GrB_LOR, A, A2, nullptr));
+            GrB_CHECK(GrB_Matrix_eWiseAdd_BinaryOp(R, nullptr, nullptr, GrB_LOR, A, A2, nullptr));
         }
 
         void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
