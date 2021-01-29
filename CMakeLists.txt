@@ -106,14 +106,17 @@ if (BENCH_WITH_CLSPARSE)
     add_executable(clsparse_mult src/clsparse_multiply.cpp)
     list(APPEND CLSPARSE_TARGETS clsparse_basic clsparse_mult)
 
-    set(clSPARSER_PATH ${CMAKE_BINARY_DIR}/thirdparty/clSPARSE/clSPARSE-build)
+    # /home/Egor.Orachev/Documents/Github/SpBench/cmake-build-release/thirdparty/clSPARSE/clSPARSE-build/library
+    # /home/Egor.Orachev/Documents/Github/SpBench/cmake-build-release/thirdparty/clSPARSE/clSPARSE-build/library
+    set(clSPARSE_PATH ${CMAKE_BINARY_DIR}/thirdparty/clSPARSE/clSPARSE-build)
+    message(STATUS "${clSPARSE_PATH}/library")
 
     find_package(OpenCL REQUIRED)
 
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(clSPARSE_LIB_NAME clSPARSEd)
     elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(clSPARSE_LIB_NAME clSPARSEr)
+        set(clSPARSE_LIB_NAME clSPARSE)
     else()
         message(SEND_ERROR "Unknown build type")
     endif()
@@ -122,14 +125,14 @@ if (BENCH_WITH_CLSPARSE)
         add_dependencies(${CLSPARSE_TARGET} clSPARSE)
         target_link_libraries(${CLSPARSE_TARGET} PUBLIC sp_bench_base)
         target_link_libraries(${CLSPARSE_TARGET} PUBLIC OpenCL)
-        target_link_libraries(${CLSPARSE_TARGET} PUBLIC ${clSPARSE_LIB_NAME})
-        target_link_directories(${CLSPARSE_TARGET} PUBLIC ${clSPARSER_PATH}/library)
+        target_link_directories(${CLSPARSE_TARGET} PUBLIC ${clSPARSE_PATH}/library)
         target_include_directories(${CLSPARSE_TARGET} PUBLIC thirdparty/clSPARSE/src/include)
-        target_include_directories(${CLSPARSE_TARGET} PUBLIC ${clSPARSER_PATH}/library)
+        target_include_directories(${CLSPARSE_TARGET} PUBLIC ${clSPARSE_PATH}/library)
+        target_link_options(${CLSPARSE_TARGET} PUBLIC "-l${clSPARSE_LIB_NAME}")
 
-        target_compile_features(${CLSPARSE_TARGET} PUBLIC cxx_std_14)
+        target_compile_features(${CLSPARSE_TARGET} PUBLIC cxx_std_11)
 
-        set_target_properties(${CLSPARSE_TARGET} PROPERTIES CXX_STANDARD 17)
+        set_target_properties(${CLSPARSE_TARGET} PROPERTIES CXX_STANDARD 11)
         set_target_properties(${CLSPARSE_TARGET} PROPERTIES CXX_STANDARD_REQUIRED ON)
 
         list(APPEND TARGETS ${CLSPARSE_TARGET})
