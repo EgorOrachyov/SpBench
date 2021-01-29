@@ -36,13 +36,32 @@ namespace benchmark {
                 return;
             }
 
-            int platformId = 0;
+            int selectedPlatformId = 0;
+
+            std::string keyWords[] = { "cuda", "CUDA", "Cuda", "NVIDIA", "nvidia", "Nvidia"};
+
+            int platformId = -1;
+            bool foundCuda = false;
             for (const auto& p : platforms) {
-                std::cout << "Platform ID " << platformId++ << " : " << p.getInfo<CL_PLATFORM_NAME>() << std::endl;
+                platformId += 1;
+
+                std::cout << "Platform ID " << platformId << " : " << p.getInfo<CL_PLATFORM_NAME>() << std::endl;
+                auto info = p.getInfo<CL_PLATFORM_NAME>();
+
+                for (auto& k: keyWords) {
+                    if (info.find(k) != std::basic_string<char, std::char_traits<char>, std::allocator<char>>::npos) {
+                        foundCuda = true;
+                        std::cout << "Select Platform ID " << platformId << " : " << p.getInfo<CL_PLATFORM_NAME>() << std::endl;
+                        break;
+                    }
+                }
+
+                if (foundCuda)
+                    break;
             }
 
-            int selectedPlatformId = 0;
             clPlatform = platforms[selectedPlatformId];
+
 
             std::vector<cl::Device> devices;
             clStatus = clPlatform.getDevices(CL_DEVICE_TYPE_GPU, &devices);

@@ -61,9 +61,36 @@ namespace utils {
         std::vector<cl::Kernel> kernels;
         cl::Program program;
         cl::Device device;
+
+        int platformId = -1;
+
         try {
             cl::Platform::get(&platforms);
-            platforms[0].getDevices(CL_DEVICE_TYPE_GPU, &devices);
+            // Here we try to select cuda, even if AMD is available
+            {
+                std::string keyWords[] = { "cuda", "CUDA", "Cuda", "NVIDIA", "nvidia", "Nvidia"};
+
+                bool foundCuda = false;
+                for (const auto& p : platforms) {
+                    platformId += 1;
+
+                    std::cout << "Platform ID " << platformId << " : " << p.getInfo<CL_PLATFORM_NAME>() << std::endl;
+                    auto info = p.getInfo<CL_PLATFORM_NAME>();
+
+                    for (auto& k: keyWords) {
+                        if (info.find(k) != std::basic_string<char, std::char_traits<char>, std::allocator<char>>::npos) {
+                            foundCuda = true;
+                            std::cout << "Select Platform ID " << platformId << " : " << p.getInfo<CL_PLATFORM_NAME>() << std::endl;
+                            break;
+                        }
+                    }
+
+                    if (foundCuda)
+                        break;
+                }
+            }
+
+            platforms[platformId].getDevices(CL_DEVICE_TYPE_GPU, &devices);
             std::cout << devices[0].getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>() << std::endl;
             return Controls(devices[0]);
 
