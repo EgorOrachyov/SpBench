@@ -108,7 +108,6 @@ target_link_libraries(sparse-boolean-matrix-operations ${OpenCL_LIBRARY})
 
 # у меня этот макрос через раз отрабатывает, вроде файл поменяла, а он не скопировался
 # copy cl files to binary folder
-FILE(GLOB CL_FILES src/cl/*.cl)
 foreach (cl_file ${CL_FILES})
     add_custom_command(
             TARGET sparse-boolean-matrix-operations
@@ -119,9 +118,7 @@ foreach (cl_file ${CL_FILES})
 endforeach (cl_file)
 endif()
 
+FILE(GLOB CL_FILES src/cl/*.cl)
 foreach (cl_file ${CL_FILES})
-    add_custom_command(TARGET clbool
-                       PRE_BUILD
-                       COMMAND ${CMAKE_COMMAND}
-                       ARGS -E copy ${cl_file} ${PROJECT_BINARY_DIR}/.)
+    file(COPY ${cl_file} DESTINATION ${PROJECT_BINARY_DIR}/.)
 endforeach (cl_file)
