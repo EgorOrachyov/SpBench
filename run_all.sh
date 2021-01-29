@@ -1,0 +1,11 @@
+./cubool_mult data/config.txt
+./cubool_add data/config.txt
+./cusp_mult data/config.txt
+./cusp_add data/config.txt
+./cusparse_mult data/config.txt
+./cusparse_add data/config.txt
+./clsparse_mult data/config.txt
+./clbool_mult data/config.txt
+./clbool_add data/config.txt
+./suitesparse_mult data/config.txt
+./suitesparse_add data/config.txt
