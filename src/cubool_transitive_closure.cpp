@@ -39,8 +39,9 @@ namespace benchmark {
             assert(status == CUBOOL_STATUS_SUCCESS);
         }
 
-        void setupExperiment(size_t experimentIdx, size_t &iterationsCount) override {
+        void setupExperiment(size_t experimentIdx, size_t &iterationsCount, std::string& name) override {
             iterationsCount = ITERATIONS_COUNT[experimentIdx];
+            name = FILES_NAMES[experimentIdx];
 
             const auto& file = FILES_NAMES[experimentIdx];
             const auto& type = IS_UNDIRECTED[experimentIdx];

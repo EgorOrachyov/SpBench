@@ -13,6 +13,7 @@
 #include <cassert>
 #include <fstream>
 #include <cmath>
+#include <iomanip>
 
 namespace benchmark {
 
@@ -74,6 +75,7 @@ namespace benchmark {
         // Benchmark results
 
         struct PerExperiment {
+            std::string userFriendlyName;
             size_t iterationsCount = 0;
             double totalTime = 0.0;
             double averageTime = 0.0;
@@ -91,7 +93,7 @@ namespace benchmark {
         virtual void setupBenchmark() = 0;
         virtual void tearDownBenchmark() = 0;
 
-        virtual void setupExperiment(size_t experimentIdx, size_t& iterationsCount) = 0;
+        virtual void setupExperiment(size_t experimentIdx, size_t& iterationsCount, std::string& name) = 0;
         virtual void tearDownExperiment(size_t experimentIdx) = 0;
 
         virtual void setupIteration(size_t experimentIdx, size_t iterationIdx) = 0;
@@ -119,14 +121,19 @@ namespace benchmark {
 
             setupBenchmark();
 
+            size_t maxNameLength = 0;
+
             for (auto experimentIdx = 0; experimentIdx < experimentsCount; experimentIdx++) {
                 size_t iterationsCount;
+                std::string name;
 
                 log << "> Begin experiment: " << experimentIdx << std::endl;
 
-                setupExperiment(experimentIdx, iterationsCount);
+                setupExperiment(experimentIdx, iterationsCount, name);
+                maxNameLength = std::max(maxNameLength, name.length());
 
                 PerExperiment perExperiment;
+                perExperiment.userFriendlyName = std::move(name);
                 perExperiment.iterationsCount = iterationsCount;
                 perExperiment.minIterationTime = std::numeric_limits<double>::max();
                 perExperiment.samplesMs.reserve(iterationsCount);
@@ -155,7 +162,7 @@ namespace benchmark {
                 perExperiment.totalTime = timeQuery.getTotalTimeMS();
                 perExperiment.averageTime = timeQuery.getAverageTimeMs();
 
-                double sd;
+                double sd = 0.0f;
                 for (auto sample: perExperiment.samplesMs) {
                     auto diff = (sample - perExperiment.averageTime);
                     sd += diff * diff;
@@ -188,6 +195,35 @@ namespace benchmark {
             }
 
             tearDownBenchmark();
+
+            // Print final summary stuff here
+            {
+                std::string summaryName = "Summary-" + benchmarkName + ".txt";
+                std::fstream summaryFile;
+
+                summaryFile.open(summaryName, std::ios_base::out);
+                assert(summaryFile.is_open());
+
+                if (summaryFile.is_open()) {
+                    const int alignSamples = 15;
+                    const int alignExpect = 15;
+                    const int alignSd = 15;
+
+                    summaryFile << "Benchmarking: " << benchmarkName << std::endl << std::endl;
+
+                    summaryFile << std::setw((int) maxNameLength + 2) << "Friendly name" << "| "
+                                << std::setw(alignSamples) << "iterations" << "| "
+                                << std::setw(alignExpect) << "expectation ms" << "| "
+                                << std::setw(alignSd) << "sd ms" << "| " << std::endl;
+
+                    for (auto& r: results) {
+                        summaryFile << std::setw((int) maxNameLength + 2) << r.userFriendlyName << ": "
+                                    << std::setw(alignSamples) << r.iterationsCount << "  "
+                                    << std::setw(alignExpect) << r.averageTime << "  "
+                                    << std::setw(alignSd) << r.standardDeviationMs << std::endl;
+                    }
+                }
+            }
 
             log << "=-=-=-=-=-= FINISH: " << benchmarkName << " =-=-=-=-=-=" << std::endl;
         }

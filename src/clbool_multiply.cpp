@@ -40,10 +40,11 @@ namespace benchmark {
             delete controls;
         }
 
-        void setupExperiment(size_t experimentIdx, size_t &iterationsCount) override {
+        void setupExperiment(size_t experimentIdx, size_t &iterationsCount, std::string& name) override {
             auto& entry = argsProcessor.getEntries()[experimentIdx];
 
             iterationsCount = entry.iterations;
+            name = entry.name;
 
             const auto& file = entry.name;
             const auto& type = entry.isUndirected;
