@@ -189,6 +189,10 @@ endforeach()
 # Copy data into build directory
 file(COPY ${CMAKE_CURRENT_LIST_DIR}/data/ DESTINATION ${CMAKE_BINARY_DIR}/data/)
 
+# Copy scripts into build directory
+file(GLOB SCRIPTS "*.sh")
+file(COPY ${SCRIPTS} DESTINATION ${CMAKE_BINARY_DIR})
+
 # Unpack data for benchmarks into build directory
 add_custom_target(unzip_dataset ALL)
 add_custom_command(TARGET unzip_dataset PRE_BUILD

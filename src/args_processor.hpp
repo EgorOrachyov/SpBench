@@ -24,36 +24,53 @@ namespace benchmark {
         };
 
         void parse(int argc, const char** argv) {
-            assert(argc == 2);
+            assert(argc >= 2);
             mArgc = argc;
             mArgv = argv;
 
-            // Suppose, the second one is the name of the file with the config of input data
-            const char* configName = argv[1];
-            std::fstream configFile;
-            configFile.open(configName, std::ios_base::in);
+            if (std::string(argv[1]) == "-E") {
+                assert(argc == 5);
 
-            if (!configFile.is_open()) {
-                std::cerr << "Failed to open config file: " << configName << std::endl;
-                return;
-            }
-
-            while (!configFile.eof()) {
-                std::string line;
-                std::getline(configFile, line);
-
-                if (line.empty() || line[0] == '%')
-                    continue;
-
-                std::string name;
+                std::string name = argv[2];
                 int isUndirected = 0;
                 size_t iterations = 0;
 
-                std::stringstream lineParser(line);
-                lineParser >> name >> isUndirected >> iterations;
+                std::stringstream lineParser(argv[3]);
+                lineParser >> isUndirected;
+
+                lineParser = std::stringstream(argv[4]);
+                lineParser >> iterations;
 
                 Entry entry{ std::move(name), isUndirected != 0, iterations };
                 mEntries.push_back(std::move(entry));
+            } else {
+                // Suppose, the second one is the name of the file with the config of input data
+                const char* configName = argv[1];
+                std::fstream configFile;
+                configFile.open(configName, std::ios_base::in);
+
+                if (!configFile.is_open()) {
+                    std::cerr << "Failed to open config file: " << configName << std::endl;
+                    return;
+                }
+
+                while (!configFile.eof()) {
+                    std::string line;
+                    std::getline(configFile, line);
+
+                    if (line.empty() || line[0] == '%')
+                        continue;
+
+                    std::string name;
+                    int isUndirected = 0;
+                    size_t iterations = 0;
+
+                    std::stringstream lineParser(line);
+                    lineParser >> name >> isUndirected >> iterations;
+
+                    Entry entry{ std::move(name), isUndirected != 0, iterations };
+                    mEntries.push_back(std::move(entry));
+                }
             }
 
             mIsParsed = true;

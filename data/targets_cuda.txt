@@ -1,0 +1,6 @@
+cubool_mult
+cubool_add
+cusp_mult
+cusp_add
+cusparse_mult
+cusparse_add

@@ -1,2 +1,2 @@
-./suitesparse_mult data/config.txt
-./suitesparse_add data/config.txt
+export SPBENCH_TARGETS="data/targets_cpu.txt"
+bash run.sh

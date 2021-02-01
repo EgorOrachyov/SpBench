@@ -19,13 +19,10 @@ namespace benchmark {
 
     struct CsrMatrix {
         CsrMatrix() = default;
-
         CsrMatrix(const CsrMatrix &other) = default;
-
         CsrMatrix(CsrMatrix &&other) = default;
 
         CsrMatrix &operator=(const CsrMatrix &other) = default;
-
         CsrMatrix &operator=(CsrMatrix &&other) = default;
 
         void release() {

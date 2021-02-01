@@ -1,3 +1,2 @@
-./clsparse_mult data/config.txt
-./clbool_mult data/config.txt
-./clbool_add data/config.txt
+export SPBENCH_TARGETS="data/targets_opencl.txt"
+bash run.sh

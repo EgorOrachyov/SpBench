@@ -1,0 +1,11 @@
+https://sparse.tamu.edu/DIMACS10/wing		     undirected
+https://sparse.tamu.edu/DIMACS10/luxembourg_osm  undirected
+https://sparse.tamu.edu/SNAP/web-Google          undirected
+https://sparse.tamu.edu/SNAP/roadNet-PA          undirected
+https://sparse.tamu.edu/SNAP/roadNet-TX	         undirected
+https://sparse.tamu.edu/LAW/hollywood-2009       undirected
+https://sparse.tamu.edu/DIMACS10/belgium_osm     undirected
+https://sparse.tamu.edu/SNAP/roadNet-CA	         undirected
+https://sparse.tamu.edu/SNAP/wiki-Talk	         directed
+https://sparse.tamu.edu/SNAP/soc-LiveJournal1	 directed
+https://sparse.tamu.edu/LAW/indochina-2004	     directed
