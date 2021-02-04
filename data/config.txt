@@ -1,12 +1,12 @@
 % File name and path | isUndirected | num iteration
-data/wing/wing.mtx                              1   20
-data/luxembourg_osm/luxembourg_osm.mtx          1   20
-% data/web-Google/web-Google.mtx                1   20
-data/roadNet-PA/roadNet-PA.mtx                  1   20
-data/roadNet-TX/roadNet-TX.mtx                  1   20
-% data/hollywood-2009/hollywood-2009.mtx        1   20
-data/belgium_osm/belgium_osm.mtx                1   20
-data/roadNet-CA/roadNet-CA.mtx                  1   20
-% data/wiki-Talk/wiki-Talk.mtx                  0   20
-% data/soc-LiveJournal1/soc-LiveJournal1.mtx    0   20
-% data/indochina-2004/indochina-2004.mtx        0   20
+data/wing/wing.mtx                              1   10
+data/luxembourg_osm/luxembourg_osm.mtx          1   10
+% data/web-Google/web-Google.mtx                1   10
+data/roadNet-PA/roadNet-PA.mtx                  1   10
+data/roadNet-TX/roadNet-TX.mtx                  1   10
+% data/hollywood-2009/hollywood-2009.mtx        1   10
+data/belgium_osm/belgium_osm.mtx                1   10
+data/roadNet-CA/roadNet-CA.mtx                  1   10
+% data/wiki-Talk/wiki-Talk.mtx                  0   10
+% data/soc-LiveJournal1/soc-LiveJournal1.mtx    0   10
+% data/indochina-2004/indochina-2004.mtx        0   10

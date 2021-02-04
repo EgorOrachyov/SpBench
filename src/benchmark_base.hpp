@@ -111,7 +111,7 @@ namespace benchmark {
             assert(experimentsCount > 0);
             assert(results.empty());
 
-            log.open(benchmarkName + ".txt", std::ios_base::out);
+            log.open(benchmarkName + ".txt", std::ios_base::out | std::ios_base::app);
             if (!log.is_open()) {
                 std::cerr << "Failed to open log file" << std::endl;
                 return;
@@ -125,9 +125,10 @@ namespace benchmark {
                 size_t iterationsCount;
                 std::string name;
 
-                log << "> Begin experiment: " << experimentIdx << std::endl;
 
                 setupExperiment(experimentIdx, iterationsCount, name);
+
+                log << "> Begin experiment: " << experimentIdx << " name: "<< name << std::endl;
 
                 PerExperiment perExperiment;
                 perExperiment.userFriendlyName = std::move(name);
@@ -154,6 +155,8 @@ namespace benchmark {
                     perExperiment.maxIterationTime = std::max(perExperiment.maxIterationTime, elapsedTimeMs);
                     perExperiment.minIterationTime = std::min(perExperiment.minIterationTime, elapsedTimeMs);
                     perExperiment.samplesMs.push_back(elapsedTimeMs);
+
+                    log << "[" << iterationIdx << "] time: " << elapsedTimeMs << " ms" << std::endl;
                 }
 
                 perExperiment.totalTime = timeQuery.getTotalTimeMS();

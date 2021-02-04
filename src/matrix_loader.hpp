@@ -12,7 +12,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cassert>
-
+#include <unordered_set>
 
 namespace benchmark {
 
@@ -61,9 +61,22 @@ namespace benchmark {
             lineStream >> ncols;
             lineStream >> nvalsInFile;
 
+            struct Hash {
+                size_t operator()(const pair& p) const {
+                    return std::hash<unsigned int>()(p.first) + std::hash<unsigned int>()(p.second);
+                }
+            };
+
+            struct Eq {
+                size_t operator()(const pair& a, const pair& b) const {
+                    return a.first == b.first && a.second == b.second;
+                }
+            };
+
+            std::unordered_set<pair, Hash, Eq> pairsSet;
 
             nvals = isUndirected? nvalsInFile * 2: nvalsInFile;
-            pairs.reserve(nvals);
+            pairsSet.reserve(nvals);
 
             for (auto i = 0; i < nvalsInFile; i++) {
                 std::getline(file, line);
@@ -80,11 +93,16 @@ namespace benchmark {
                 rowid -= 1;
                 colid -= 1;
 
-                pairs.emplace_back(rowid, colid);
+                pairsSet.emplace(rowid, colid);
 
                 if (isUndirected) {
-                    pairs.emplace_back(colid, rowid);
+                    pairsSet.emplace(colid, rowid);
                 }
+            }
+
+            pairs.reserve(nvals);
+            for (auto& p: pairsSet) {
+                pairs.push_back(p);
             }
 
             std::sort(pairs.begin(), pairs.end(), [](const pair& a, const pair& b) {
