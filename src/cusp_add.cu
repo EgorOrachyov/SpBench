@@ -76,7 +76,7 @@ namespace benchmark {
             input = std::move(loader.getMatrix());
 
 #ifdef BENCH_DEBUG
-            std::cout << ">   Load A: \"" << file << "\" isUndirected: " << type << std::endl
+            log       << ">   Load A: \"" << file << "\" isUndirected: " << type << std::endl
                       << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
 
