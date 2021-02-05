@@ -195,12 +195,16 @@ file(COPY ${SCRIPTS} DESTINATION ${CMAKE_BINARY_DIR})
 
 # Unpack data for benchmarks into build directory
 add_custom_target(unzip_dataset ALL)
-add_custom_command(TARGET unzip_dataset PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_LIST_DIR}/dataset/dataset.zip
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/data
-        DEPENDS ${CMAKE_SOURCE_DIR}/dataset/dataset.zip
-        COMMENT "Unpacking benchmark dataset from dataset.zip"
-        VERBATIM)
+set(DATASET_ARCHIVES dataset0.zip dataset1.zip)
+
+foreach(ARCHIVE_NAME ${DATASET_ARCHIVES})
+    add_custom_command(TARGET unzip_dataset PRE_BUILD
+            COMMAND ${CMAKE_COMMAND} -E tar xzf ${CMAKE_CURRENT_LIST_DIR}/dataset/${ARCHIVE_NAME}
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/data
+            DEPENDS ${CMAKE_SOURCE_DIR}/dataset/${ARCHIVE_NAME}
+            COMMENT "Unpacking benchmark dataset from ${ARCHIVE_NAME}"
+            VERBATIM)
+endforeach()
 
 add_library(benchmark INTERFACE)
 add_dependencies(benchmark ${TARGETS} unzip_dataset)

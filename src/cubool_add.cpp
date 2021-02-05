@@ -57,7 +57,7 @@ namespace benchmark {
             input = std::move(loader.getMatrix());
 
 #ifdef BENCH_DEBUG
-            log       << ">   Load A: \"" << file << "\" isUndirected: " << type << std::endl
+            log       << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
                       << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
 
@@ -94,6 +94,7 @@ namespace benchmark {
             status = CuBool_Matrix_Duplicate(instance, A, &R);
             assert(status == CUBOOL_STATUS_SUCCESS);
         }
+
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
             status = CuBool_Matrix_Add(instance, R, A2);

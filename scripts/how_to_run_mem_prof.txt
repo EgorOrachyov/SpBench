@@ -1,0 +1,10 @@
+website link: https://docs.fast.ai/dev/gpu.html
+
+memory profiling
+command: nvidia-smi --query-gpu=timestamp,pstate,temperature.gpu,utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv -lms 1 -f Profiling.csv
+command: nvidia-smi --query-gpu=timestamp,pstate,memory.total,memory.used --format=csv -lms 1 -f Profiling.csv
+comment: runs memory profiling with step 1 ms (i.e. 1000 measurements per second)
+
+time points profiling
+command: date +"%Y/%m/%d %H:%M:%S.%3N"
+comment: current time point

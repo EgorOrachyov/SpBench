@@ -130,7 +130,7 @@ namespace benchmark {
 
                 log << "> Begin experiment: " << experimentIdx << " name: "<< name << std::endl;
 
-                PerExperiment perExperiment;
+                PerExperiment perExperiment{};
                 perExperiment.userFriendlyName = std::move(name);
                 perExperiment.iterationsCount = iterationsCount;
                 perExperiment.minIterationTime = std::numeric_limits<double>::max();
@@ -162,15 +162,16 @@ namespace benchmark {
                 perExperiment.totalTime = timeQuery.getTotalTimeMS();
                 perExperiment.averageTime = timeQuery.getAverageTimeMs();
 
-                double sd = 0.0f;
-                for (auto sample: perExperiment.samplesMs) {
-                    auto diff = (sample - perExperiment.averageTime);
-                    sd += diff * diff;
-                }
+                if (iterationsCount > 1) {
+                    double sd = 0.0f;
+                    for (auto sample: perExperiment.samplesMs) {
+                        auto diff = (sample - perExperiment.averageTime);
+                        sd += diff * diff;
+                    }
 
-                assert(iterationsCount > 1);
-                sd = sd / (double)(iterationsCount - 1);
-                perExperiment.standardDeviationMs = std::sqrt(sd);
+                    sd = sd / (double) (iterationsCount - 1);
+                    perExperiment.standardDeviationMs = std::sqrt(sd);
+                }
 
                 tearDownExperiment(experimentIdx);
 
