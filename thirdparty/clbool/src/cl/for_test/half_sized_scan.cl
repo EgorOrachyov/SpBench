@@ -1,7 +1,7 @@
-//#include "clion_defines.cl"
-//
-//#define SWAP(a,b) {__local unsigned int * tmp=a; a=b; b=tmp;}
-//#define GROUP_SIZE 256
+#ifndef RUN
+#include "../clion_defines.cl"
+#define GROUP_SIZE 256
+#endif
 //// count prefixes itself on input array
 //// and vertices as thr output
 

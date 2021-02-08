@@ -11,9 +11,10 @@ const uint32_t BINS_NUM = 38;
 
 void test_multiplication() {
     Controls controls = utils::create_controls();
-    for (uint32_t k = 17; k < 20; ++k) {
-        for (uint32_t i = 20; i < 10000; i += 50) {
-            std::cout << "i = " << i << ", k = " << k << std::endl;
+    for (uint32_t k = 18; k < 20; ++k) {
+        for (uint32_t i = 1000; i < 2000; i += 5) {
+//    for (int i = 0; i < 200; ++i) {
+            std::cout << "iter = " << i <<  ", i = " << i << ", k = " << k << std::endl;
             uint32_t max_size = i;
             uint32_t nnz_max = std::max(10u, max_size * k);
 
@@ -35,6 +36,7 @@ void test_multiplication() {
             std::cout << "e\n";
 //        print_matrix(controls, c_gpu, 69);
             compare_matrices(controls, c_gpu, c_cpu);
+//        }
         }
     }
 }

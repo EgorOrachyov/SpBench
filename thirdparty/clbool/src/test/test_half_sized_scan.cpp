@@ -1,6 +1,7 @@
 #include "coo_tests.hpp"
 #include "../coo/coo_utils.hpp"
 #include "../dcsr/dscr_matrix_multiplication.hpp"
+#include "../cl/headers/half_sized_scan.h"
 
 using namespace coo_utils;
 using namespace utils;
@@ -13,31 +14,18 @@ void testScan() {
     controls.queue.enqueueWriteBuffer(array_gpu, CL_TRUE, 0, array.size()
     * sizeof(cpu_buffer::value_type), array.data());
     utils::print_gpu_buffer(controls, array_gpu, array.size());
-    cl::Program program;
     try {
-        program = controls.create_program_from_file("../src/coo/cl/half_sized_scan.cl");
-        uint32_t block_size = 32;
+        auto half_sized_scan = program<cl::Buffer, uint32_t>(half_sized_scan_kernel, half_sized_scan_kernel_length)
+                .set_block_size(32)
+                .set_needed_work_size(array.size())
+                .set_kernel_name("scan_blelloch_half");
 
-        std::stringstream options;
-        options << "-D GROUP_SIZE=" << block_size;
-        program.build(options.str().c_str());
-
-        uint32_t work_group_size = block_size;
-        uint32_t global_work_size = utils::calculate_global_size(work_group_size, array.size());
-
-        cl::Kernel half_sized_scan_kernel(program, "scan_blelloch_half");
-        cl::KernelFunctor<cl::Buffer, uint32_t> half_sized_scan(half_sized_scan_kernel);
-        cl::EnqueueArgs eargs(controls.queue, cl::NDRange(global_work_size), cl::NDRange(work_group_size));
-
-        half_sized_scan(eargs, array_gpu, array.size());
+        half_sized_scan.run(controls, array_gpu, array.size());
         utils::print_gpu_buffer(controls, array_gpu, array.size());
 
     } catch (const cl::Error &e) {
         std::stringstream exception;
         exception << "\n" << e.what() << " : " << utils::error_name(e.err()) << "\n";
-        if (e.err() == CL_BUILD_PROGRAM_FAILURE) {
-            exception << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(controls.device);
-        }
         throw std::runtime_error(exception.str());
     }
 }

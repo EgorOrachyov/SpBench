@@ -180,7 +180,7 @@ namespace coo_utils {
                 throw std::runtime_error("incorrect result!");
             }
         }
-//        std::cout << "check finished, probably correct\n";
+        std::cout << "check finished, probably correct\n";
     }
 
     matrix_coo_cpu_pairs generate_random_matrix_coo_cpu(uint32_t pseudo_nnz, uint32_t max_size) {

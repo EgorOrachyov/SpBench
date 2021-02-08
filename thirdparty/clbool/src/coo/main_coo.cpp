@@ -3,7 +3,7 @@
 int main() {
 //    testBitonicSort();
 //    testReduceDuplicates();
-//    testMatrixAddition();
+    testMatrixAddition();
 //    testKronecker();
 //    testCOOtoDCSR();
 //    testCountWorkload();
@@ -17,7 +17,7 @@ int main() {
 //    test_new_merge();
 //    test_new_merge_full();
 //    largeRowsTest();
-    test_multiplication();
+//    test_multiplication();
 }
 
 

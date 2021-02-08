@@ -12,23 +12,19 @@ struct Controls {
     const cl::Device device;
     const cl::Context context;
     cl::CommandQueue queue;
+    cl::CommandQueue async_queue;
     const uint32_t block_size = uint32_t(256);
 
     Controls(cl::Device device) :
-    device(device)
+            device(device)
     , context(cl::Context(device))
     , queue(cl::CommandQueue(context))
+    , async_queue(cl::CommandQueue(context, CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE))
     {}
 
-    // TODO: do we really need methods?
-    cl::Program create_program_from_file(std::string filename) const {
-        // TODO: ADD FILE NAME IN BINARY WITH CMAKE TASK
-        std::ifstream cl_file(filename);
-        std::string cl_string(std::istreambuf_iterator<char>(cl_file), (std::istreambuf_iterator<char>()));
-        cl::Program::Sources source(1, {cl_string.c_str(), cl_string.length()});
-        return cl::Program(context, source);
+    cl::Program create_program_from_source(const char * kernel, uint32_t length) const {
+        return cl::Program(context, {{kernel, length}});
     }
-
 };
 
 

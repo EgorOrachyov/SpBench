@@ -6,8 +6,6 @@
 #include <matrix_loader.hpp>
 #include <args_processor.hpp>
 
-#include <CL/cl.hpp>
-
 // clBool goes here
 #include <library_classes/controls.hpp>
 #include <library_classes/cpu_matrices.hpp>

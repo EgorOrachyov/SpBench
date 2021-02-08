@@ -1,14 +1,18 @@
 #include "matrices_conversions.hpp"
 
+#include "../cl/headers/dscr_to_coo.h"
+#include "../cl/headers/prepare_positions.h"
+#include "../cl/headers/set_positions.h"
+
 matrix_coo dcsr_to_coo(Controls &controls, matrix_dcsr &a) {
     cl::Buffer c_rows_indices(controls.context, CL_MEM_READ_WRITE, sizeof(matrix_dcsr::index_type) * a.nnz());
 
-    auto dscr_to_coo_kernel = program<cl::Buffer, cl::Buffer, cl::Buffer>("thirdparty/clbool/dscr_to_coo.cl")
+    auto dscr_to_coo = program<cl::Buffer, cl::Buffer, cl::Buffer>(dscr_to_coo_kernel, dscr_to_coo_kernel_length)
             .set_kernel_name("dscr_to_coo")
             .set_block_size(64)
             .set_needed_work_size(a.nzr() * 64);
 
-    dscr_to_coo_kernel.run(controls, a.rows_pointers_gpu(), a.rows_compressed_gpu(), c_rows_indices);
+    dscr_to_coo.run(controls, a.rows_pointers_gpu(), a.rows_compressed_gpu(), c_rows_indices);
     return matrix_coo(a.nRows(), a.nCols(), a.nnz(), c_rows_indices, a.cols_indices_gpu());
 }
 
@@ -23,7 +27,7 @@ namespace {
 
         cl::Buffer positions(controls.context, CL_MEM_READ_WRITE, sizeof(uint32_t) * size);
 
-        auto prepare_positions = program<cl::Buffer, cl::Buffer, uint32_t>("thirdparty/clbool/prepare_positions.cl")
+        auto prepare_positions = program<cl::Buffer, cl::Buffer, uint32_t>(prepare_positions_kernel, prepare_positions_kernel_length)
                 .set_kernel_name("prepare_array_for_rows_positions")
                 .set_needed_work_size(size);
         prepare_positions.run(controls, positions, rows, size);
@@ -34,7 +38,7 @@ namespace {
         cl::Buffer rows_compressed(controls.context, CL_MEM_READ_WRITE, sizeof(uint32_t) * nzr);
 
         auto set_positions = program<cl::Buffer, cl::Buffer, cl::Buffer, cl::Buffer, uint32_t, uint32_t>(
-                "thirdparty/clbool/set_positions.cl")
+                 set_positions_kernel, set_positions_kernel_length)
                 .set_kernel_name("set_positions_rows")
                 .set_needed_work_size(size);
 

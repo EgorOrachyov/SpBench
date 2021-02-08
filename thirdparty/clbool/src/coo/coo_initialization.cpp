@@ -13,16 +13,13 @@
 #include <fstream>
 #include <cmath>
 
+#include "../cl/headers/coo_bitonic_sort.h"
 
 void sort_arrays(Controls &controls, cl::Buffer &rows_gpu, cl::Buffer &cols_gpu, uint32_t n) {
     cl::Program program;
 
     try {
-        std::ifstream cl_file("thirdparty/clbool/coo_bitonic_sort.cl");
-        std::string cl_string(std::istreambuf_iterator<char>(cl_file), (std::istreambuf_iterator<char>()));
-        cl::Program::Sources source(1, {cl_string.c_str(), cl_string.length()});
-
-        program = cl::Program(controls.context, source);
+        program = controls.create_program_from_source(coo_bitonic_sort_kernel, coo_bitonic_sort_kernel_length);
 
         uint32_t block_size = controls.block_size;
 

@@ -1,17 +1,26 @@
 #include "cl_operations.hpp"
 
+#include "../cl/headers/prefix_sum.h"
+
+//namespace {
+//    auto prefix_sum = program<cl::Buffer, cl::Buffer, cl::LocalSpaceArg, cl::Buffer, unsigned int>
+//            (prefix_sum_kernel, prefix_sum_kernel_length)
+//            .set_kernel_name();
+//
+//}
+
 void prefix_sum(Controls &controls,
                 cl::Buffer &array,
                 uint32_t &total_sum,
                 uint32_t array_size) {
-
     cl::Program program;
     try {
-        program = controls.create_program_from_file("thirdparty/clbool/prefix_sum.cl");
+        program = controls.create_program_from_source(prefix_sum_kernel, prefix_sum_kernel_length);
         uint32_t block_size = controls.block_size;
 
         std::stringstream options;
         options << "-D RUN " << "-D GROUP_SIZE=" << block_size;
+
         program.build(options.str().c_str());
 
         uint32_t work_group_size = block_size;
@@ -35,10 +44,8 @@ void prefix_sum(Controls &controls,
 
         cl::EnqueueArgs eargs(controls.queue, cl::NDRange(global_work_size), cl::NDRange(work_group_size));
 
-
         uint32_t leaf_size = 1;
-        cl::Event event = scan(eargs, a_gpu, array, local_array, total_sum_gpu, array_size);
-        event.wait();
+        scan(eargs, a_gpu, array, local_array, total_sum_gpu, array_size);
 
         uint32_t outer = (array_size + block_size - 1) / block_size;
 
@@ -54,21 +61,14 @@ void prefix_sum(Controls &controls,
                                                cl::NDRange((outer + work_group_size - 1) / work_group_size *
                                                            work_group_size),
                                                cl::NDRange(work_group_size));
-
-            cl::Event event_in_recursion = scan(eargs_in_recursion, *b_gpu_ptr, *a_gpu_ptr, local_array, total_sum_gpu, outer);
-            event_in_recursion.wait();
-
-            cl::Event update_event = update(eargs, array, *a_gpu_ptr, array_size, leaf_size);
-            update_event.wait();
-
+            scan(eargs_in_recursion, *b_gpu_ptr, *a_gpu_ptr, local_array, total_sum_gpu, outer);
+            update(eargs, array, *a_gpu_ptr, array_size, leaf_size);
             outer = (outer + block_size - 1) / block_size;
             std::swap(a_gpu_ptr, b_gpu_ptr);
             std::swap(a_size_ptr, b_size_ptr);
         }
+        controls.queue.enqueueReadBuffer(total_sum_gpu, CL_TRUE, 0, sizeof(uint32_t), &total_sum);
 
-        cl::Event readingBuff;
-        controls.queue.enqueueReadBuffer(total_sum_gpu, CL_TRUE, 0, sizeof(uint32_t), &total_sum, nullptr, &readingBuff);
-        readingBuff.wait();
 
     } catch (const cl::Error &e) {
         utils::program_handler(e, program, controls.device, "prefix_sum");

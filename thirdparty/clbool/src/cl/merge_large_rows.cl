@@ -75,7 +75,7 @@ scan(__local uint *positions, uint scan_size) {
         positions[scan_size] = positions[local_id];
         positions[local_id] = 0;
     }
-
+    barrier(CLK_LOCAL_MEM_FENCE);
     for (uint s = 1; s < scan_size; s <<= 1) {
         dp >>= 1;
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -263,7 +263,7 @@ ceil_to_power2(uint v) {
 __kernel void merge_large_rows(__global const uint *indices,
                                uint group_start, // indices_pointers[workload_group_id]
 
-                                 __global uint *aux_mem_pointers,
+                               __global uint *aux_mem_pointers,
                                __global uint *aux_mem,
 
                                __global const uint *pre_matrix_rows_pointers,
@@ -288,7 +288,7 @@ __kernel void merge_large_rows(__global const uint *indices,
 
     __local uint *buff_1 = merge_buffer1;
     __local uint *buff_2 = merge_buffer2;
-;
+
     __local uint positions[BUFFER_SIZE + 1];
 
     uint fill_pointer = 0;
@@ -297,53 +297,56 @@ __kernel void merge_large_rows(__global const uint *indices,
     uint a_start = a_rows_pointers[row_index];
     uint a_end = a_rows_pointers[row_index + 1];
 
-
     __global uint *result = pre_matrix_cols_indices + pre_matrix_rows_pointers[row_index];
     __global uint *current_row_aux_memory = aux_mem + aux_mem_pointers[group_id];
-
 
     __global uint *buff_1_global = result;
     __global uint *buff_2_global = current_row_aux_memory;
 
-
-    __local bool global_flag[1];
-    __local uint new_b_row_start[1];
-    __local uint old_b_row_end[1];
+    __local bool global_flag;
+    __local uint new_b_row_start;
+    __local uint old_b_row_end;
     uint global_fill_pointer = 0;
 
     if (local_id == 0) {
-        *global_flag = 0;
+        global_flag = false;
+        new_b_row_start = 0;
+        old_b_row_end = 0;
     }
-    barrier(CLK_LOCAL_MEM_FENCE);
 
     for (uint a_row_pointer = a_start; a_row_pointer < a_end; ++a_row_pointer) {
+        barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_GLOBAL_MEM_FENCE);
 
-        if (!*global_flag) {
+        if (!global_flag) {
             col_index = a_cols[a_row_pointer];
             b_row_pointer = search_global(b_rows_compressed, col_index, b_nzr);
             if (b_row_pointer == b_nzr) continue;
         }
 
-        b_start = *global_flag ? *new_b_row_start : b_rows_pointers[b_row_pointer];
-        b_end =  *global_flag ? *old_b_row_end : b_rows_pointers[b_row_pointer + 1];
+        b_start = global_flag ? new_b_row_start : b_rows_pointers[b_row_pointer];
+        b_end =  global_flag ? old_b_row_end : b_rows_pointers[b_row_pointer + 1];
         b_row_length = b_end - b_start;
-        if (*global_flag && local_id == 0) *global_flag = false;
 
-        barrier(CLK_LOCAL_MEM_FENCE);
+        if (global_flag && local_id == 0) {
+            global_flag = false;
+        }
 
+        barrier(CLK_GLOBAL_MEM_FENCE);
         uint steps = (b_row_length + GROUP_SIZE - 1) / GROUP_SIZE;
-
         // ------------------ COPY  ---------------------------
-
+        barrier(CLK_LOCAL_MEM_FENCE);
+        barrier(CLK_GLOBAL_MEM_FENCE);
         // hint: мы не можем сделать тут больше одного шага, но пусть будет
-        for (uint group_step = 0; group_step < steps && (!*global_flag); ++group_step) {
+        for (uint group_step = 0; group_step < steps && !global_flag; ++group_step) {
+            barrier(CLK_LOCAL_MEM_FENCE);
+            barrier(CLK_GLOBAL_MEM_FENCE);
             uint elem_id_local = group_step * GROUP_SIZE + local_id;
             uint elem_id = b_start + elem_id_local;
             if (elem_id < b_end) {
                 uint fill_position = elem_id_local + fill_pointer;
                 // fill_position нам тут нужен для проверки, что ряд поместится.
                 if (fill_position < BUFFER_SIZE) {
-
                     if (fill_pointer == 0) {
                         buff_2[elem_id_local] = b_cols[elem_id];
                     } else {
@@ -351,29 +354,30 @@ __kernel void merge_large_rows(__global const uint *indices,
                         positions[elem_id_local] =
                                 search_local(buff_2, buff_1[elem_id_local], fill_pointer) == fill_pointer ? 1 : 0;
                     }
+
                 } else {
                     if (fill_position == BUFFER_SIZE) {
-                        *global_flag = true;
-                        *new_b_row_start = elem_id;
-                        *old_b_row_end = b_end;
+                        global_flag = true;
+                        new_b_row_start = elem_id;
+                        old_b_row_end = b_end;
                     }
                 }
             }
+            barrier(CLK_LOCAL_MEM_FENCE);
+            barrier(CLK_GLOBAL_MEM_FENCE);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
         barrier(CLK_GLOBAL_MEM_FENCE);
 
-        if (*global_flag) {a_row_pointer --;}
-        uint filled_b_length = *global_flag ? *new_b_row_start - b_start : b_row_length;
-
+        if (global_flag) {a_row_pointer --;}
+        uint filled_b_length = global_flag ? new_b_row_start - b_start : b_row_length;
         // ------------------ LOCAL MERGE ---------------------------
-
         if (fill_pointer != 0) {
 
             if (local_id >= filled_b_length) positions[local_id] = 0;
             barrier(CLK_LOCAL_MEM_FENCE);
-
             scan_size = ceil_to_power2(filled_b_length);
+
             scan(positions, scan_size);
             barrier(CLK_LOCAL_MEM_FENCE);
 
@@ -389,12 +393,15 @@ __kernel void merge_large_rows(__global const uint *indices,
         } else {
             new_length = filled_b_length;
         }
+
+
         fill_pointer += new_length;
         bool last_step = (a_row_pointer == a_end - 1) && (filled_b_length == b_row_length);
+        barrier(CLK_LOCAL_MEM_FENCE);
 
         // ------------------ GLOBAL MERGE ---------------------------
 
-        if (*global_flag || last_step) {
+        if (global_flag || last_step) {
             if (global_fill_pointer == 0) {
                 if (local_id < fill_pointer) {
                     result[local_id] = buff_2[local_id];
@@ -402,46 +409,43 @@ __kernel void merge_large_rows(__global const uint *indices,
                 new_length = fill_pointer;
             }
             else {
-
                 positions[local_id] =
                         search_global(buff_1_global, buff_2[local_id], global_fill_pointer) == global_fill_pointer ? 1 : 0;
+
                 barrier(CLK_LOCAL_MEM_FENCE);
                 barrier(CLK_GLOBAL_MEM_FENCE);
 
                 if (local_id >= fill_pointer) positions[local_id] = 0;
-
                 barrier(CLK_LOCAL_MEM_FENCE);
 
                 scan_size = ceil_to_power2(fill_pointer);
-
 
                 scan(positions, scan_size);
                 barrier(CLK_LOCAL_MEM_FENCE);
 
                 new_length = positions[scan_size];
-
                 // переместим их из buff2 в buff1
                 set_positions(positions, buff_2, fill_pointer, buff_1, scan_size);
-
                 barrier(CLK_LOCAL_MEM_FENCE);
 
                 merge_global(buff_1_global, buff_1, buff_2_global, global_fill_pointer, new_length);
-
-
+                barrier(CLK_LOCAL_MEM_FENCE);
+                barrier(CLK_GLOBAL_MEM_FENCE);
                 SWAP_GLOBAL(buff_1_global, buff_2_global);
-
-
             }
-            barrier(CLK_LOCAL_MEM_FENCE);
-            barrier(CLK_GLOBAL_MEM_FENCE);
+
             global_fill_pointer += new_length;
             fill_pointer = 0;
         }
+
     }
+
+    barrier(CLK_LOCAL_MEM_FENCE);
+    barrier(CLK_GLOBAL_MEM_FENCE);
+
     if (result != buff_1_global) {
         uint steps = (global_fill_pointer + GROUP_SIZE - 1) / GROUP_SIZE;
         for (uint step = 0; step < steps; ++step) {
-
             uint elem_id = local_id + GROUP_SIZE * step;
             if (elem_id < global_fill_pointer) {
                 result[elem_id] = buff_1_global[elem_id];

@@ -11,13 +11,13 @@ void matrix_addition(
         const matrix_coo &a,
         const matrix_coo &b
 );
-
-void check_merge_correctness(
-        Controls &controls,
-        cl::Buffer &rows,
-        cl::Buffer &cols,
-        uint32_t merged_size
-);
+//
+//void check_merge_correctness(
+//        Controls &controls,
+//        cl::Buffer &rows,
+//        cl::Buffer &cols,
+//        uint32_t merged_size
+//);
 
 void merge(
         Controls &controls,

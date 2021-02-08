@@ -2,7 +2,7 @@
 #include "fast_random.h"
 
 namespace utils {
-    void compare_buffers(Controls &controls, const cl::Buffer &buffer_g, const cpu_buffer &buffer_c, uint32_t size) {
+    void compare_buffers(Controls &controls, const cl::Buffer &buffer_g, const cpu_buffer &buffer_c, uint32_t size, std::string name) {
         cpu_buffer cpu_copy(size);
         controls.queue.enqueueReadBuffer(buffer_g, CL_TRUE, 0, sizeof(uint32_t) * cpu_copy.size(), cpu_copy.data());
         for (uint32_t i = 0; i < size; ++i) {
@@ -13,7 +13,7 @@ namespace utils {
                     std::cout << j << ": (" << cpu_copy[j] << ", " << buffer_c[j] << "), ";
                 }
                 std::cout << std::endl;
-                throw std::runtime_error("buffers are different");
+                throw std::runtime_error("buffers for " + name + " are different");
             }
         }
         std::cout << "buffers are equal" << std::endl;
@@ -23,9 +23,9 @@ namespace utils {
         if (m_gpu.nnz() != m_cpu.cols_indices().size()) {
             std::cout << "diff nnz, gpu: " << m_gpu.nnz() << " vs cpu: " << m_cpu.cols_indices().size() << std::endl;
         }
-        compare_buffers(controls, m_gpu.rows_pointers_gpu(), m_cpu.rows_pointers(), m_gpu.nzr() + 1);
-        compare_buffers(controls, m_gpu.rows_compressed_gpu(), m_cpu.rows_compressed(), m_gpu.nzr());
-        compare_buffers(controls, m_gpu.cols_indices_gpu(), m_cpu.cols_indices(), m_gpu.nnz());
+        compare_buffers(controls, m_gpu.rows_pointers_gpu(), m_cpu.rows_pointers(), m_gpu.nzr() + 1, "rows_pointers");
+        compare_buffers(controls, m_gpu.rows_compressed_gpu(), m_cpu.rows_compressed(), m_gpu.nzr(), "rows_compressed");
+        compare_buffers(controls, m_gpu.cols_indices_gpu(), m_cpu.cols_indices(), m_gpu.nnz(), "cols_indices");
     }
 
 
@@ -61,7 +61,6 @@ namespace utils {
         std::vector<cl::Kernel> kernels;
         cl::Program program;
         cl::Device device;
-
         int platformId = -1;
 
         try {

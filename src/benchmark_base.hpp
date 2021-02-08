@@ -111,7 +111,9 @@ namespace benchmark {
             assert(experimentsCount > 0);
             assert(results.empty());
 
-            log.open(benchmarkName + ".txt", std::ios_base::out | std::ios_base::app);
+            auto logName = "Log-" + benchmarkName + ".txt";
+
+            log.open(logName, std::ios_base::out | std::ios_base::app);
             if (!log.is_open()) {
                 std::cerr << "Failed to open log file" << std::endl;
                 return;
