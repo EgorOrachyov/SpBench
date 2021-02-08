@@ -8,6 +8,7 @@ dataset 0: https://sparse.tamu.edu/SNAP/roadNet-TX	         undirected     1,393
 dataset 0: https://sparse.tamu.edu/LAW/hollywood-2009        undirected     1,139,905
 dataset 0: https://sparse.tamu.edu/DIMACS10/belgium_osm      undirected     1,441,295
 dataset 0: https://sparse.tamu.edu/SNAP/roadNet-CA	         undirected     1,971,281
+dataset 1: https://sparse.tamu.edu/DIMACS10/netherlands_osm  undirected     2,216,688
 dataset 0: https://sparse.tamu.edu/SNAP/wiki-Talk	         directed       2,394,385
 dataset 0: https://sparse.tamu.edu/SNAP/soc-LiveJournal1	 directed       4,847,571
 dataset 0: https://sparse.tamu.edu/LAW/indochina-2004	     directed       7,414,866

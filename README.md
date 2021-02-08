@@ -50,15 +50,15 @@ The matrix data is selected from The SuiteSparse Matrix Collection
 (formerly the University of Florida Sparse Matrix Collection) 
 [link](https://sparse.tamu.edu).
 
-| Matrix name             | # Rows      | Nnz M     | Nnz M * M   | Nnz M + M * M |
-| :---                    | :---        | :---      | :---        | :---          |
-| DIMACS10/wing		      | 62,032      | 243088    | 714200      | 917178        |
-| DIMACS10/luxembourg_osm | 114,599     | 239332    | 393261      | 632185        |
-| SNAP/amazon0312         | 400,727     | 3200440   | 14390544    | 14968909      |
-| LAW/amazon-2008         | 735,323     | 5158388   | 25366745    | 26402678      |
-| SNAP/web-Google         | 916,428     | 5105039   | 29710164    | 30811855      |
-| SNAP/roadNet-PA         | 1,090,920   | 3083796   | 7238920     | 9931528       |
-| SNAP/roadNet-TX	      | 1,393,383   | 3843320   | 8903897     | 12264987      |
-| DIMACS10/belgium_osm    | 1,441,295   | 3099940   | 5323073     | 8408599       |
-| SNAP/roadNet-CA	      | 1,971,281   | 5533214   | 12908450    | 17743342      |
-| SNAP/wiki-Talk	      | 2,394,385   | 5021410   | 1155524188  | 1158853825    |
+| Matrix name             | # Rows      | Nnz M       | Nnz M * M   | Nnz M + M * M |
+| :---                    | :---        | :---        | :---        | :---          |
+| DIMACS10/wing		      | 62,032      | 243,088     | 714,200     | 917,178       |
+| DIMACS10/luxembourg_osm | 114,599     | 239,332     | 393,261     | 632,185       |
+| SNAP/amazon0312         | 400,727     | 3,200,440   | 14,390,544  | 14,968,909    |
+| LAW/amazon-2008         | 735,323     | 5,158,388   | 25,366,745  | 26,402,678    |
+| SNAP/web-Google         | 916,428     | 5,105,039   | 29,710,164  | 30,811,855    |
+| SNAP/roadNet-PA         | 1,090,920   | 3,083,796   | 7,238,920   | 9,931,528     |
+| SNAP/roadNet-TX	      | 1,393,383   | 3,843,320   | 8,903,897   | 12,264,987    |
+| DIMACS10/belgium_osm    | 1,441,295   | 3,099,940   | 5,323,073   | 8,408,599     |
+| SNAP/roadNet-CA	      | 1,971,281   | 5,533,214   | 12,908,450  | 17,743,342    |
+| DIMACS10/netherlands_osm| 2,216,688   | 4,882,476   | 8,755,758   | 136,261,32    |
