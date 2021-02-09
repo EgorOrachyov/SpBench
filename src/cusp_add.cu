@@ -80,25 +80,44 @@ namespace benchmark {
                       << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
 
-            size_t n = input.nrows;
-            assert(input.nrows == input.ncols);
+            {
+                size_t n = input.nrows;
+                assert(input.nrows == input.ncols);
 
-            hostData = host_matrix_t(n, n, input.nvals);
+                hostData = host_matrix_t(n, n, input.nvals);
 
-            for (auto i = 0; i < input.nvals; i++) {
-                hostData.row_indices[i] = input.rows[i];
-                hostData.column_indices[i] = input.cols[i];
-                hostData.values[i] = t;
+                for (auto i = 0; i < input.nvals; i++) {
+                    hostData.row_indices[i] = input.rows[i];
+                    hostData.column_indices[i] = input.cols[i];
+                    hostData.values[i] = t;
+                }
+
+                A = std::move(device_matrix_t(hostData));
             }
 
-            A = std::move(device_matrix_t(hostData));
+            MatrixLoader2 loader2(file);
+            loader2.loadData();
+            input = std::move(loader2.getMatrix());
 
-            thrust::identity<value_type> identity;
-            logic_and<value_type> combine;
-            logic_or<value_type> reduce;
+#ifdef BENCH_DEBUG
+            log       << ">   Load A2: \"" << file << "\" isUndirected: " << type << std::endl
+                      << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
+#endif // BENCH_DEBUG
 
-            // compute M2 = M * M
-            cusp::multiply(A, A, A2, identity, combine, reduce);
+            {
+                size_t n = input.nrows;
+                assert(input.nrows == input.ncols);
+
+                hostData = host_matrix_t(n, n, input.nvals);
+
+                for (auto i = 0; i < input.nvals; i++) {
+                    hostData.row_indices[i] = input.rows[i];
+                    hostData.column_indices[i] = input.cols[i];
+                    hostData.values[i] = t;
+                }
+
+                A2 = std::move(device_matrix_t(hostData));
+            }
         }
 
         void tearDownExperiment(size_t experimentIdx) override {

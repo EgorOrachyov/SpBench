@@ -23,6 +23,10 @@ if (BENCH_WITH_CUBOOL)
     set(CUBOOL_BUILD_TESTS OFF CACHE BOOL "" FORCE)
     add_subdirectory(thirdparty/cubool)
 
+    add_executable(cubool_prepare_data src/cubool_prepare_data.cpp)
+    target_link_libraries(cubool_prepare_data PUBLIC cubool)
+    target_link_libraries(cubool_prepare_data PUBLIC sp_bench_base)
+
     set(CUBOOl_TARGETS)
     add_executable(cubool_mult src/cubool_multiply.cpp)
     add_executable(cubool_add src/cubool_add.cpp)

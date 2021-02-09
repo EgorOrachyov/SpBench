@@ -65,8 +65,13 @@ namespace benchmark {
 
             CUBOOL_CHECK(CuBool_Matrix_New(instance, &A, n, n));
             CUBOOL_CHECK(CuBool_Matrix_Build(instance, A, input.rows.data(), input.cols.data(), input.nvals));
+
+            MatrixLoader2 loader2(file);
+            loader2.loadData();
+            input = std::move(loader2.getMatrix());
+
             CUBOOL_CHECK(CuBool_Matrix_New(instance, &A2, n, n));
-            CUBOOL_CHECK(CuBool_MxM(instance, A2, A, A));
+            CUBOOL_CHECK(CuBool_Matrix_Build(instance, A2, input.rows.data(), input.cols.data(), input.nvals));
         }
 
         void tearDownExperiment(size_t experimentIdx) override {

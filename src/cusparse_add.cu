@@ -75,81 +75,87 @@ namespace benchmark {
             input = std::move(loader.getMatrix());
 
 #ifdef BENCH_DEBUG
-            log       << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
+            log       << ">   Load A: \"" << file << "\" isUndirected: " << type << std::endl
                       << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals
                       << std::endl;
 #endif // BENCH_DEBUG
 
-            size_t n = input.nrows;
-            assert(input.nrows == input.ncols);
+            {
+                size_t n = input.nrows;
+                assert(input.nrows == input.ncols);
 
-            thrust::host_vector<int> rowsPtr(n + 1, 0);
-            thrust::host_vector<int> colsInd(input.nvals);
+                thrust::host_vector<int> rowsPtr(n + 1, 0);
+                thrust::host_vector<int> colsInd(input.nvals);
 
-            for (auto i = 0; i < input.nvals; i++) {
-                rowsPtr[input.rows[i]] += 1;
-                colsInd[i] = input.cols[i];
+                for (auto i = 0; i < input.nvals; i++) {
+                    rowsPtr[input.rows[i]] += 1;
+                    colsInd[i] = input.cols[i];
+                }
+
+                int sum = 0;
+                for (auto &r: rowsPtr) {
+                    int prev = sum;
+                    sum += r;
+                    r = prev;
+                }
+
+                CUSPARSE_CHECH(cusparseCreateMatDescr(&A.desc));
+                CUSPARSE_CHECH(cusparseSetMatType(A.desc, CUSPARSE_MATRIX_TYPE_GENERAL));
+                CUSPARSE_CHECH(cusparseSetMatIndexBase(A.desc, CUSPARSE_INDEX_BASE_ZERO));
+
+                A.nvals = input.nvals;
+                A.n = n;
+                A.rows.resize(rowsPtr.size());
+                A.cols.resize(colsInd.size());
+                values.resize(A.nvals, 1.0f);
+
+                thrust::copy(rowsPtr.begin(), rowsPtr.end(), A.rows.begin());
+                thrust::copy(colsInd.begin(), colsInd.end(), A.cols.begin());
             }
 
-            int sum = 0;
-            for (auto &r: rowsPtr) {
-                int prev = sum;
-                sum += r;
-                r = prev;
+
+            MatrixLoader2 loader2(file);
+            loader2.loadData();
+            input = std::move(loader2.getMatrix());
+
+#ifdef BENCH_DEBUG
+            log       << ">   Load A2: \"" << file << "\" isUndirected: " << type << std::endl
+                      << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals
+                      << std::endl;
+#endif // BENCH_DEBUG
+
+            {
+                size_t n = input.nrows;
+                assert(input.nrows == input.ncols);
+
+                thrust::host_vector<int> rowsPtr(n + 1, 0);
+                thrust::host_vector<int> colsInd(input.nvals);
+
+                for (auto i = 0; i < input.nvals; i++) {
+                    rowsPtr[input.rows[i]] += 1;
+                    colsInd[i] = input.cols[i];
+                }
+
+                int sum = 0;
+                for (auto &r: rowsPtr) {
+                    int prev = sum;
+                    sum += r;
+                    r = prev;
+                }
+
+                CUSPARSE_CHECH(cusparseCreateMatDescr(&A2.desc));
+                CUSPARSE_CHECH(cusparseSetMatType(A2.desc, CUSPARSE_MATRIX_TYPE_GENERAL));
+                CUSPARSE_CHECH(cusparseSetMatIndexBase(A2.desc, CUSPARSE_INDEX_BASE_ZERO));
+
+                A2.nvals = input.nvals;
+                A2.n = n;
+                A2.rows.resize(rowsPtr.size());
+                A2.cols.resize(colsInd.size());
+                values.resize(A2.nvals, 1.0f);
+
+                thrust::copy(rowsPtr.begin(), rowsPtr.end(), A2.rows.begin());
+                thrust::copy(colsInd.begin(), colsInd.end(), A2.cols.begin());
             }
-
-            CUSPARSE_CHECH(cusparseCreateMatDescr(&A.desc));
-            CUSPARSE_CHECH(cusparseSetMatType(A.desc, CUSPARSE_MATRIX_TYPE_GENERAL));
-            CUSPARSE_CHECH(cusparseSetMatIndexBase(A.desc, CUSPARSE_INDEX_BASE_ZERO));
-
-            A.nvals = input.nvals;
-            A.n = n;
-            A.rows.resize(rowsPtr.size());
-            A.cols.resize(colsInd.size());
-            values.resize(A.nvals, 1.0f);
-
-            thrust::copy(rowsPtr.begin(), rowsPtr.end(), A.rows.begin());
-            thrust::copy(colsInd.begin(), colsInd.end(), A.cols.begin());
-
-            // A2 = A * A
-
-            CUSPARSE_CHECH(cusparseSetPointerMode(handle, CUSPARSE_POINTER_MODE_HOST));
-
-            CUSPARSE_CHECH(cusparseCreateMatDescr(&A2.desc));
-            CUSPARSE_CHECH(cusparseSetMatType(A2.desc, CUSPARSE_MATRIX_TYPE_GENERAL));
-            CUSPARSE_CHECH(cusparseSetMatIndexBase(A2.desc, CUSPARSE_INDEX_BASE_ZERO));
-
-            A2.rows.resize(A.n + 1);
-
-            int nnzA2 = 0;
-            int *nnzTotalDevHostPtr = &nnzA2;
-
-            CUSPARSE_CHECH(cusparseXcsrgemmNnz(
-                    handle,
-                    CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
-                    A.n, A.n, A.n,
-                    A.desc, A.nvals, A.rows.data().get(), A.cols.data().get(),
-                    A.desc, A.nvals, A.rows.data().get(), A.cols.data().get(),
-                    A2.desc, A2.rows.data().get(), nnzTotalDevHostPtr
-            ));
-
-            assert(nnzTotalDevHostPtr != nullptr);
-            nnzA2 = *nnzTotalDevHostPtr;
-
-            A2.n = A.n;
-            A2.nvals = nnzA2;
-            A2.cols.resize(nnzA2);
-
-            valuesA2.resize(nnzA2, 1.0f);
-
-            CUSPARSE_CHECH(cusparseScsrgemm(
-                    handle,
-                    CUSPARSE_OPERATION_NON_TRANSPOSE, CUSPARSE_OPERATION_NON_TRANSPOSE,
-                    A.n, A.n, A.n,
-                    A.desc, A.nvals, values.data().get(), A.rows.data().get(), A.cols.data().get(),
-                    A.desc, A.nvals, values.data().get(), A.rows.data().get(), A.cols.data().get(),
-                    A2.desc, valuesA2.data().get(), A2.rows.data().get(), A2.cols.data().get()
-            ));
         }
 
         void tearDownExperiment(size_t experimentIdx) override {

@@ -55,30 +55,32 @@ namespace benchmark {
             input = std::move(loader.getMatrix());
 
 #ifdef BENCH_DEBUG
-            log       << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
+            log       << ">   Load A: \"" << file << "\" isUndirected: " << type << std::endl
                       << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
 
-            size_t n = input.nrows;
-            assert(input.nrows == input.ncols);
+            {
+                size_t n = input.nrows;
+                assert(input.nrows == input.ncols);
 
-            matrix_coo_cpu_pairs matrixA;
-            matrixA.reserve(input.nvals);
-
-            for (auto i = 0; i < input.nvals; i++) {
-                matrixA.push_back({ input.rows[i], input.cols[i] });
+                A = std::move(matrix_coo(*controls, n, n, input.nvals, input.rows, input.cols, true));
             }
 
-            matrix_dcsr_cpu matrixDcsrA = coo_utils::coo_to_dcsr_cpu(matrixA);
+            MatrixLoader2 loader2(file);
+            loader2.loadData();
+            input = std::move(loader2.getMatrix());
 
-            matrix_dcsr dcsrA = matrix_dcsr_from_cpu(*controls, matrixDcsrA, n);
-            matrix_dcsr dcsrA2;
+#ifdef BENCH_DEBUG
+            log       << ">   Load A2: \"" << file << "\" isUndirected: " << type << std::endl
+                      << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
+#endif // BENCH_DEBUG
 
-            // A2 = A * A
-            matrix_multiplication(*controls, dcsrA2, dcsrA, dcsrA);
+            {
+                size_t n = input.nrows;
+                assert(input.nrows == input.ncols);
 
-            A = std::move(dcsr_to_coo(*controls, dcsrA));
-            A2 = std::move(dcsr_to_coo(*controls, dcsrA2));
+                A2 = std::move(matrix_coo(*controls, n, n, input.nvals, input.rows, input.cols, true));
+            }
         }
 
         void tearDownExperiment(size_t experimentIdx) override {

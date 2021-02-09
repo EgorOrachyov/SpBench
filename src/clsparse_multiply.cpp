@@ -36,10 +36,9 @@ namespace benchmark {
                 return;
             }
 
-            int selectedPlatformId = 0;
-
             std::string keyWords[] = { "cuda", "CUDA", "Cuda", "NVIDIA", "nvidia", "Nvidia"};
 
+            int selectedPlatformId = -1;
             int platformId = -1;
             bool foundCuda = false;
             for (const auto& p : platforms) {
@@ -51,6 +50,7 @@ namespace benchmark {
                 for (auto& k: keyWords) {
                     if (info.find(k) != std::basic_string<char, std::char_traits<char>, std::allocator<char>>::npos) {
                         foundCuda = true;
+                        selectedPlatformId = platformId;
                         std::cout << "Select Platform ID " << platformId << " : " << p.getInfo<CL_PLATFORM_NAME>() << std::endl;
                         break;
                     }

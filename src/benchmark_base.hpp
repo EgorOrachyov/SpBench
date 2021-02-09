@@ -239,7 +239,6 @@ namespace benchmark {
 
             log << "=-=-=-=-=-= FINISH: " << benchmarkName << " =-=-=-=-=-=" << std::endl;
         }
-
     };
 
 }

@@ -13,16 +13,9 @@
 #include <algorithm>
 #include <cassert>
 #include <unordered_set>
+#include <matrix.hpp>
 
 namespace benchmark {
-
-    struct Matrix {
-        size_t nrows = 0;
-        size_t ncols = 0;
-        size_t nvals = 0;
-        std::vector<unsigned int> rows;
-        std::vector<unsigned int> cols;
-    };
 
     class MatrixLoader {
     public:
@@ -146,6 +139,33 @@ namespace benchmark {
         size_t nvals = 0;
         size_t nvalsInFile = 0;
         std::vector<pair> pairs;
+    };
+
+    class MatrixLoader2 {
+    public:
+
+        explicit MatrixLoader2(const std::string& path)
+        : path(path + "2"), loader(this->path, false) {
+
+        }
+
+        /** Attempts to load data */
+        void loadData() {
+            loader.loadData();
+        }
+
+        bool isLoaded() const {
+            return loader.isLoaded();
+        }
+
+        /** @return Converted read data to basic coo matrix */
+        Matrix getMatrix() const {
+            return loader.getMatrix();
+        }
+
+    private:
+        std::string path;
+        MatrixLoader loader;
     };
 
 }
