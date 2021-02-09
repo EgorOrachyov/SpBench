@@ -56,7 +56,7 @@ int main(int argc, const char** argv) {
         CUBOOL_CHECK(CuBool_Matrix_Ncols(instance, result, &ncols));
         CUBOOL_CHECK(CuBool_Matrix_Nvals(instance, result, &nvals));
 
-        std::cout << "Result matrix" << file << " : size: " << nrows << " x " << ncols << " nvals: " << nvals << std::endl;
+        std::cout << "Result matrix " << file << "2 : size: " << nrows << " x " << ncols << " nvals: " << nvals << std::endl;
 
         Matrix m2;
         m2.nrows = nrows;

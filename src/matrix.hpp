@@ -13,6 +13,14 @@ struct Matrix {
     size_t nvals = 0;
     std::vector<unsigned int> rows;
     std::vector<unsigned int> cols;
+
+    Matrix() = default;
+    Matrix(const Matrix& m) = default;
+    Matrix(Matrix&& m) noexcept = default;
+
+    Matrix& operator=(const Matrix& m) = default;
+    Matrix& operator=(Matrix&& m) noexcept = default;
+
 };
 
 #endif //SPBENCH_MATRIX_HPP

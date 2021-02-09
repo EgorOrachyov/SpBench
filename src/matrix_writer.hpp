@@ -25,8 +25,6 @@ namespace benchmark {
          * @param path Path to the file
          */
         void save(const std::string& path, const Matrix& m) {
-            assert(!loaded);
-
             std::ofstream file;
             file.open(path, std::ios_base::out);
 
@@ -35,10 +33,30 @@ namespace benchmark {
                 return;
             }
 
-            file << m.nrows << " " << m.ncols << " " << m.nvals << std::endl;
+            using pair = std::pair<unsigned int, unsigned int>;
+
+            struct Hash {
+                size_t operator()(const pair& p) const {
+                    return std::hash<unsigned int>()(p.first) + std::hash<unsigned int>()(p.second);
+                }
+            };
+
+            struct Eq {
+                size_t operator()(const pair& a, const pair& b) const {
+                    return a.first == b.first && a.second == b.second;
+                }
+            };
+
+            std::unordered_set<pair, Hash, Eq> pairsSet;
 
             for (auto i = 0; i < m.nvals; i++) {
-                file << m.rows[i] + 1 << " " << m.cols[i] + 1 << std::endl;
+                pairsSet.emplace(m.rows[i], m.cols[i]);
+            }
+
+            file << m.nrows << " " << m.ncols << " " << pairsSet.size() << std::endl;
+
+            for (auto& e: pairsSet) {
+                file << e.first + 1 << " " << e.second + 1 << std::endl;
             }
 
             file.close();

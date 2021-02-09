@@ -86,12 +86,21 @@ namespace benchmark {
                 rowid -= 1;
                 colid -= 1;
 
+                assert(rowid < nrows);
+                assert(colid < ncols);
+
+                if (pairsSet.find({rowid, colid}) != pairsSet.end()) {
+                    std::cerr << rowid << " " << colid << std::endl;
+                }
+
                 pairsSet.emplace(rowid, colid);
 
                 if (isUndirected) {
                     pairsSet.emplace(colid, rowid);
                 }
             }
+
+            nvals = pairsSet.size();
 
             pairs.reserve(nvals);
             for (auto& p: pairsSet) {
@@ -121,6 +130,9 @@ namespace benchmark {
             for (const auto& p: pairs) {
                 matrix.rows.push_back(p.first);
                 matrix.cols.push_back(p.second);
+
+                assert(p.first < nrows);
+                assert(p.second < ncols);
             }
 
             return std::move(matrix);

@@ -84,11 +84,11 @@ namespace benchmark {
                 size_t n = input.nrows;
                 assert(input.nrows == input.ncols);
 
-                hostData = host_matrix_t(n, n, input.nvals);
+                host_matrix_t hostData(n, n, input.nvals);
 
                 for (auto i = 0; i < input.nvals; i++) {
-                    hostData.row_indices[i] = input.rows[i];
-                    hostData.column_indices[i] = input.cols[i];
+                    hostData.row_indices[i] = (int) input.rows[i];
+                    hostData.column_indices[i] = (int) input.cols[i];
                     hostData.values[i] = t;
                 }
 
@@ -108,11 +108,11 @@ namespace benchmark {
                 size_t n = input.nrows;
                 assert(input.nrows == input.ncols);
 
-                hostData = host_matrix_t(n, n, input.nvals);
+                host_matrix_t hostData(n, n, input.nvals);
 
-                for (auto i = 0; i < input.nvals; i++) {
-                    hostData.row_indices[i] = input.rows[i];
-                    hostData.column_indices[i] = input.cols[i];
+                for (size_t i = 0; i < input.nvals; i++) {
+                    hostData.row_indices[i] = (int) input.rows[i];
+                    hostData.column_indices[i] = (int) input.cols[i];
                     hostData.values[i] = t;
                 }
 
@@ -151,7 +151,6 @@ namespace benchmark {
         typedef cusp::coo_matrix<int, value_type, cusp::host_memory> host_matrix_t;
         typedef cusp::csr_matrix<int, value_type, cusp::device_memory> device_matrix_t;
 
-        host_matrix_t hostData;
         device_matrix_t A;
         device_matrix_t A2;
         device_matrix_t R;

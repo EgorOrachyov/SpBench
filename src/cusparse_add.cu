@@ -151,7 +151,7 @@ namespace benchmark {
                 A2.n = n;
                 A2.rows.resize(rowsPtr.size());
                 A2.cols.resize(colsInd.size());
-                values.resize(A2.nvals, 1.0f);
+                valuesA2.resize(A2.nvals, 1.0f);
 
                 thrust::copy(rowsPtr.begin(), rowsPtr.end(), A2.rows.begin());
                 thrust::copy(colsInd.begin(), colsInd.end(), A2.cols.begin());
