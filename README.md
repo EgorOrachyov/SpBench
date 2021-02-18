@@ -78,7 +78,7 @@ required for the target tested framework.
 **Matrix-matrix multiplication evaluation results.**  
 Time in milliseconds, Memory in megabytes.
 
-| №  | CuBool     | CUSP       | cuSPARSE   | clBool     | clSPARSE   | SuiteSparse |
+| №  | cuBool     | CUSP       | cuSPARSE   | clBool     | clSPARSE   | SuiteSparse |
 |--- |---         |---         |---         |---         |---         |---          |
 | M  | Time & Mem | Time & Mem | Time & Mem | Time & Mem | Time & Mem | Time        |
 | 0  | 2.2 215    | 5.8 125    | 20.2 155   | 60.5 95    | 127.9 109  | 10.0        |
@@ -95,7 +95,7 @@ Time in milliseconds, Memory in megabytes.
 **Element-wise matrix-matrix addition evaluation results.**  
 Time in milliseconds, Memory in megabytes.
 
-| №  | CuBool     | CUSP       | cuSPARSE   | clBool     | clSPARSE   | SuiteSparse |
+| №  | cuBool     | CUSP       | cuSPARSE   | clBool     | clSPARSE   | SuiteSparse |
 |--- |---         |---         |---         |---         |---         |---          |
 | M  | Time & Mem | Time & Mem | Time & Mem | Time & Mem | Time & Mem | Time        |
 | 0  | 1.1 97     | 1.5 103    | 2.4 163    | 22.8 105   | - -        | 4.0         |
