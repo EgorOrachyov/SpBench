@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
 project(SpBench LANGUAGES CXX CUDA)
 
 # Exposed options. Disable something, if do not want to build cuda or cl stuff.
@@ -110,8 +110,6 @@ if (BENCH_WITH_CLSPARSE)
     add_executable(clsparse_mult src/clsparse_multiply.cpp)
     list(APPEND CLSPARSE_TARGETS clsparse_basic clsparse_mult)
 
-    # /home/Egor.Orachev/Documents/Github/SpBench/cmake-build-release/thirdparty/clSPARSE/clSPARSE-build/library
-    # /home/Egor.Orachev/Documents/Github/SpBench/cmake-build-release/thirdparty/clSPARSE/clSPARSE-build/library
     set(clSPARSE_PATH ${CMAKE_BINARY_DIR}/thirdparty/clSPARSE/clSPARSE-build)
     message(STATUS "${clSPARSE_PATH}/library")
 
