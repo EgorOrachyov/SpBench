@@ -80,7 +80,7 @@ Time in milliseconds, Memory in megabytes.
 
 | №  | cuBool     | CUSP       | cuSPARSE   | clBool     | clSPARSE   | SuiteSparse |
 |--- |---         |---         |---         |---         |---         |---          |
-| M  | Time & Mem | Time & Mem | Time & Mem | Time & Mem | Time & Mem | Time        |
+| M  | Time&Mem   | Time&Mem   | Time&Mem   | Time&Mem   | Time&Mem   | Time        |
 | 0  | 2.2 215    | 5.8 125    | 20.2 155   | 60.5 95    | 127.9 109  | 10.0        |
 | 1  | 2.9 213    | 4.1 111    | 1.7 149    | 16.0 91    | 10.8 99    | 2.5         |
 | 2  | 24.6 215   | 110.3 897  | 411.6 301  | 97.6 279   | 65.7 459   | 238.2       |
@@ -97,7 +97,7 @@ Time in milliseconds, Memory in megabytes.
 
 | №  | cuBool     | CUSP       | cuSPARSE   | clBool     | clSPARSE   | SuiteSparse |
 |--- |---         |---         |---         |---         |---         |---          |
-| M  | Time & Mem | Time & Mem | Time & Mem | Time & Mem | Time & Mem | Time        |
+| M  | Time&Mem   | Time&Mem   | Time&Mem   | Time&Mem   | Time&Mem   | Time        |
 | 0  | 1.1 97     | 1.5 103    | 2.4 163    | 22.8 105   | - -        | 4.0         |
 | 1  | 1.7 103    | 1.1 103    | 0.9 159    | 4.5 103    | - -        | 1.5         |
 | 2  | 9.4 237    | 16.5 455   | 24.1 405   | 84.0 543   | - -        | 35.1        |
