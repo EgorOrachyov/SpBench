@@ -40,8 +40,8 @@ $ cd build-release
 Configure build and run actual compilation process.
 
 ```shell script
-$ cmake . -DCMAKE_BUILD_TYPE=Release
-$ cmake --build . --target benchmark -j `nproc`
+$ cmake .. -DCMAKE_BUILD_TYPE=Release
+$ cmake --build . --target all -j `nproc`
 ```
 
 After compilation process benchmark executables 
