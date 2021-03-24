@@ -32,7 +32,7 @@
 #include <coo/coo_utils.hpp>
 #include <common/utils.hpp>
 #include <common/matrices_conversions.hpp>
-#include <dcsr/dscr_matrix_multiplication.hpp>
+#include <dcsr/dcsr_matrix_multiplication.hpp>
 
 #define BENCH_DEBUG
 

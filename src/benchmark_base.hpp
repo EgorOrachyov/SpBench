@@ -74,6 +74,10 @@ namespace benchmark {
             return mTimeSumMS;
         }
 
+        int getSamplesCount() const {
+            return mSamplesCount;
+        }
+
     private:
         double mTimeSumMS = 0.0f;
         int mSamplesCount = 0;
@@ -99,6 +103,7 @@ namespace benchmark {
             size_t iterationsCount = 0;
             double totalTime = 0.0;
             double averageTime = 0.0;
+            double averageTimeDropFirst = 0.0;
             double minIterationTime = 0.0;
             double maxIterationTime = 0.0;
             double standardDeviationMs = 0.0f;
@@ -159,6 +164,7 @@ namespace benchmark {
                 perExperiment.samplesMs.reserve(iterationsCount);
 
                 TimeQuery timeQuery;
+                double firstIteration = 0.0;
 
                 for (auto iterationIdx = 0; iterationIdx < iterationsCount; iterationIdx++) {
                     setupIteration(experimentIdx, iterationIdx);
@@ -179,10 +185,15 @@ namespace benchmark {
                     perExperiment.samplesMs.push_back(elapsedTimeMs);
 
                     log << "[" << iterationIdx << "] time: " << elapsedTimeMs << " ms" << std::endl;
+
+                    if (iterationIdx == 0) {
+                        firstIteration = timer.getElapsedTimeMs();
+                    }
                 }
 
                 perExperiment.totalTime = timeQuery.getTotalTimeMS();
                 perExperiment.averageTime = timeQuery.getAverageTimeMs();
+                perExperiment.averageTimeDropFirst = iterationsCount > 1? (timeQuery.getTotalTimeMS() - firstIteration) / (double)(timeQuery.getSamplesCount() - 1): 0.0;
 
                 if (iterationsCount > 1) {
                     double sd = 0.0f;
@@ -199,12 +210,13 @@ namespace benchmark {
 
                 log << "> End experiment: " << experimentIdx << std::endl
                     << "> Stats: " << std::endl
-                    << ">  iterations = " << perExperiment.iterationsCount << std::endl
-                    << ">  total      = " << perExperiment.totalTime << " ms" << std::endl
-                    << ">  average    = " << perExperiment.averageTime << " ms" << std::endl
-                    << ">  sd         = " << perExperiment.standardDeviationMs << " ms" << std::endl
-                    << ">  min        = " << perExperiment.minIterationTime << " ms" << std::endl
-                    << ">  max        = " << perExperiment.maxIterationTime << " ms" << std::endl;
+                    << ">  iterations   = " << perExperiment.iterationsCount << std::endl
+                    << ">  total        = " << perExperiment.totalTime << " ms" << std::endl
+                    << ">  average      = " << perExperiment.averageTime << " ms" << std::endl
+                    << ">  average (-1) = " << perExperiment.averageTimeDropFirst << " ms" << std::endl
+                    << ">  sd           = " << perExperiment.standardDeviationMs << " ms" << std::endl
+                    << ">  min          = " << perExperiment.minIterationTime << " ms" << std::endl
+                    << ">  max          = " << perExperiment.maxIterationTime << " ms" << std::endl;
 
                 log << ">  samples: " << std::endl;
                 auto id = 0;
@@ -251,7 +263,7 @@ namespace benchmark {
                     for (auto& r: results) {
                         summaryFile << std::setw(maxNameLength) << r.userFriendlyName << ": "
                                     << std::setw(alignSamples) << r.iterationsCount << "  "
-                                    << std::setw(alignExpect) << r.averageTime << "  "
+                                    << std::setw(alignExpect) << r.averageTimeDropFirst << "  "
                                     << std::setw(alignSd) << r.standardDeviationMs << std::endl;
                     }
                 }

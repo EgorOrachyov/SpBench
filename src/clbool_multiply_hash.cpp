@@ -31,20 +31,20 @@
 #include <library_classes/cpu_matrices.hpp>
 #include <coo/coo_utils.hpp>
 #include <common/utils.hpp>
+#include <common/matrices_conversions.hpp>
 #include <dcsr/dcsr_matrix_multiplication_hash.hpp>
-#include <coo/coo_matrix_addition.hpp>
 
 #define BENCH_DEBUG
 
 namespace benchmark {
-    class Add: public BenchmarkBase {
+    class Multiply: public BenchmarkBase {
     public:
 
-        Add(int argc, const char** argv) {
+        Multiply(int argc, const char** argv) {
             argsProcessor.parse(argc, argv);
             assert(argsProcessor.isParsed());
 
-            benchmarkName = "Clbool-Add";
+            benchmarkName = "Clbool-Multiply-Hash";
             experimentsCount = argsProcessor.getExperimentsCount();
         }
 
@@ -72,38 +72,28 @@ namespace benchmark {
             input = std::move(loader.getMatrix());
 
 #ifdef BENCH_DEBUG
-            log       << ">   Load A: \"" << file << "\" isUndirected: " << type << std::endl
+            log       << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
                       << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
 
-            {
-                size_t n = input.nrows;
-                assert(input.nrows == input.ncols);
+            size_t n = input.nrows;
+            assert(input.nrows == input.ncols);
 
-                A = std::move(matrix_coo(*controls, n, n, input.nvals, input.rows, input.cols, true));
+            matrix_coo_cpu_pairs matrixA;
+            matrixA.reserve(input.nvals);
+
+            for (auto i = 0; i < input.nvals; i++) {
+                matrixA.push_back({ input.rows[i], input.cols[i] });
             }
 
-            MatrixLoader2 loader2(file);
-            loader2.loadData();
-            input = std::move(loader2.getMatrix());
+            matrix_dcsr_cpu matrixDcsrA = coo_utils::coo_to_dcsr_cpu(matrixA);
 
-#ifdef BENCH_DEBUG
-            log       << ">   Load A2: \"" << file << "\" isUndirected: " << type << std::endl
-                      << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
-#endif // BENCH_DEBUG
-
-            {
-                size_t n = input.nrows;
-                assert(input.nrows == input.ncols);
-
-                A2 = std::move(matrix_coo(*controls, n, n, input.nvals, input.rows, input.cols, true));
-            }
+            A = std::move(matrix_dcsr_from_cpu(*controls, matrixDcsrA, n));
         }
 
         void tearDownExperiment(size_t experimentIdx) override {
             input = Matrix{};
-            A = matrix_coo{};
-            A2 = matrix_coo{};
+            A = matrix_dcsr{};
         }
 
         void setupIteration(size_t experimentIdx, size_t iterationIdx) override {
@@ -111,7 +101,7 @@ namespace benchmark {
         }
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
-            matrix_addition(*controls, R, A, A2);
+            matrix_multiplication_hash(*controls, R, A, A);
         }
 
         void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
@@ -120,15 +110,14 @@ namespace benchmark {
                 << " nvals " << R.nnz() << std::endl;
 #endif
 
-            R = matrix_coo{};
+            R = matrix_dcsr{};
         }
 
     protected:
 
         Controls* controls;
-        matrix_coo A;
-        matrix_coo A2;
-        matrix_coo R;
+        matrix_dcsr A;
+        matrix_dcsr R;
 
         ArgsProcessor argsProcessor;
         Matrix input;
@@ -137,7 +126,7 @@ namespace benchmark {
 }
 
 int main(int argc, const char** argv) {
-    benchmark::Add add(argc, argv);
-    add.runBenchmark();
+    benchmark::Multiply multiply(argc, argv);
+    multiply.runBenchmark();
     return 0;
 }

@@ -23,11 +23,11 @@ the provided primitives, where non-zero (floating point type) values are interpr
 
 ### Requirements
 
-GCC Compiler
-Cuda Toolkit
-CMake 3.15 (or greater)
-Boost library (for clSPARSE)
-SuiteSparse
+- GCC Compiler
+- Cuda Toolkit
+- CMake 3.15 (or greater)
+- Boost library (for clSPARSE)
+- SuiteSparse
 
 ### How to get and build
 

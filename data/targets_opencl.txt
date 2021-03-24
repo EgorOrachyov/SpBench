@@ -1,3 +1,4 @@
 clsparse_mult
 clbool_mult
+clbool_mult_hash
 clbool_add

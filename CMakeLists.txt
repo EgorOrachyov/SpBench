@@ -145,9 +145,10 @@ if (BENCH_WITH_CLBOOL)
 
     set(CLBOOL_TARGETS)
 
+    add_executable(clbool_mult_hash src/clbool_multiply_hash.cpp)
     add_executable(clbool_mult src/clbool_multiply.cpp)
     add_executable(clbool_add src/clbool_add.cpp)
-    list(APPEND CLBOOL_TARGETS clbool_mult clbool_add)
+    list(APPEND CLBOOL_TARGETS clbool_mult_hash clbool_mult clbool_add)
 
     foreach(CLBOOL_TARGET ${CLBOOL_TARGETS})
         target_link_libraries(${CLBOOL_TARGET} PUBLIC sp_bench_base)

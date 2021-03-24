@@ -1,4 +1,4 @@
-filename="Summarize.txt"
+filename="Summary.txt"
 
 if [[ -f $filename ]]; then
   rm $filename
