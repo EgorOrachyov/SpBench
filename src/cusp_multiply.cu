@@ -152,7 +152,6 @@ namespace benchmark {
 
         ArgsProcessor argsProcessor;
         Matrix input;
-
     };
 
 }

@@ -34,6 +34,7 @@
 #include <cassert>
 #include <unordered_set>
 #include <matrix.hpp>
+#include <exception>
 
 namespace benchmark {
 
@@ -59,7 +60,7 @@ namespace benchmark {
 
             if (!file.is_open()) {
                 error = "Failed to open file";
-                return;
+                throw std::runtime_error(error);
             }
 
             std::string line;

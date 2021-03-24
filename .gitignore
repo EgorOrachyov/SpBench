@@ -38,6 +38,7 @@
 /**/cmake-build-debug
 /**/cmake-build-release
 /**/*.mtx
+/**/*build*
 /dataset/
 /debug-build
 /release-build

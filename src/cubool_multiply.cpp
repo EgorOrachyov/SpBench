@@ -46,20 +46,12 @@ namespace benchmark {
 
     protected:
 
-        static void messageCallback(CuBoolStatus status, const char* message, void* userData) {
-            std::cout << "= Cubool: Status: " << status << " Message: \"" << message << "\"" << std::endl;
-        }
-
         void setupBenchmark() override {
-            CuBoolInstanceDesc desc{};
-            desc.errorCallback = {nullptr, messageCallback };
-            desc.memoryType = CUBOOL_GPU_MEMORY_TYPE_MANAGED;
-
-            CUBOOL_CHECK(CuBool_Instance_New(&desc, &instance));
+            CUBOOL_CHECK(cuBool_Initialize(CUBOOL_HINT_NO));
         }
 
         void tearDownBenchmark() override {
-            CUBOOL_CHECK(CuBool_Instance_Free(instance));
+            CUBOOL_CHECK(cuBool_Finalize());
         }
 
         void setupExperiment(size_t experimentIdx, size_t &iterationsCount, std::string& name) override {
@@ -80,47 +72,47 @@ namespace benchmark {
                       << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
 
-            CuBoolIndex_t n = input.nrows;
+            cuBool_Index n = input.nrows;
             assert(input.nrows == input.ncols);
 
-            CUBOOL_CHECK(CuBool_Matrix_New(instance, &matrix, n, n));
-            CUBOOL_CHECK(CuBool_Matrix_Build(instance, matrix, input.rows.data(), input.cols.data(), input.nvals));
+            CUBOOL_CHECK(cuBool_Matrix_New(&matrix, n, n));
+            CUBOOL_CHECK(cuBool_Matrix_Build(matrix, input.rows.data(), input.cols.data(), input.nvals, CUBOOL_HINT_NO));
         }
 
         void tearDownExperiment(size_t experimentIdx) override {
             input = Matrix{};
 
-            CUBOOL_CHECK(CuBool_Matrix_Free(instance, matrix));
+            CUBOOL_CHECK(cuBool_Matrix_Free(matrix));
 
             matrix = nullptr;
         }
 
         void setupIteration(size_t experimentIdx, size_t iterationIdx) override {
-            CuBoolIndex_t n = input.nrows;
+            cuBool_Index n = input.nrows;
             assert(input.nrows == input.ncols);
 
-            CUBOOL_CHECK(CuBool_Matrix_New(instance, &result, n, n));
+            CUBOOL_CHECK(cuBool_Matrix_New(&result, n, n));
         }
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
-            CUBOOL_CHECK(CuBool_MxM(instance, result, matrix, matrix));
+            CUBOOL_CHECK(cuBool_MxM(result, matrix, matrix, CUBOOL_HINT_NO));
         }
 
         void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
             if (matrix) {
-                CuBoolSize_t nvals;
-                CuBoolIndex_t nrows;
-                CuBoolIndex_t ncols;
+                cuBool_Index nvals;
+                cuBool_Index nrows;
+                cuBool_Index ncols;
 
-                CUBOOL_CHECK(CuBool_Matrix_Nrows(instance, result, &nrows));
-                CUBOOL_CHECK(CuBool_Matrix_Ncols(instance, result, &ncols));
-                CUBOOL_CHECK(CuBool_Matrix_Nvals(instance, result, &nvals));
+                CUBOOL_CHECK(cuBool_Matrix_Nrows(result, &nrows));
+                CUBOOL_CHECK(cuBool_Matrix_Ncols(result, &ncols));
+                CUBOOL_CHECK(cuBool_Matrix_Nvals(result, &nvals));
 
 #ifdef BENCH_DEBUG
                 log << "   Result matrix: size: " << nrows << " x " << ncols << " nvals: " << nvals << std::endl;
 #endif // BENCH_DEBUG
 
-                CUBOOL_CHECK(CuBool_Matrix_Free(instance, result));
+                CUBOOL_CHECK(cuBool_Matrix_Free(result));
 
                 result = nullptr;
             }
@@ -131,9 +123,8 @@ namespace benchmark {
 
         ArgsProcessor argsProcessor;
 
-        CuBoolInstance instance = nullptr;
-        CuBoolMatrix matrix = nullptr;
-        CuBoolMatrix result = nullptr;
+        cuBool_Matrix matrix = nullptr;
+        cuBool_Matrix result = nullptr;
 
         Matrix input;
 

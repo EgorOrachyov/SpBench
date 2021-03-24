@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15)
 project(SpBench LANGUAGES CXX CUDA)
 
 # Exposed options. Disable something, if do not want to build cuda or cl stuff.
@@ -17,10 +17,10 @@ set(TARGETS)
 
 # Cubool specific stuff
 if (BENCH_WITH_CUBOOL)
-    set(CUBOOL_WITH_CUB ON CACHE BOOL "" FORCE)
-    set(CUBOOL_WITH_NSPARSE ON CACHE BOOL "" FORCE)
-    set(CUBOOL_WITH_NAIVE OFF CACHE BOOL "" FORCE)
+    set(CUBOOL_WITH_CUDA ON CACHE BOOL "" FORCE)
+    set(CUBOOL_WITH_SEQUENTIAL ON CACHE BOOL "" FORCE)
     set(CUBOOL_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+    set(CUBOOL_COPY_TO_PY_PACKAGE OFF CACHE BOOL "" FORCE)
     add_subdirectory(thirdparty/cubool)
 
     add_executable(cubool_prepare_data src/cubool_prepare_data.cpp)
@@ -30,9 +30,7 @@ if (BENCH_WITH_CUBOOL)
     set(CUBOOl_TARGETS)
     add_executable(cubool_mult src/cubool_multiply.cpp)
     add_executable(cubool_add src/cubool_add.cpp)
-    add_executable(cubool_mult_add src/cubool_multiply_add.cpp)
-    add_executable(cubool_tc src/cubool_transitive_closure.cpp)
-    list(APPEND CUBOOl_TARGETS cubool_mult cubool_add cubool_mult_add cubool_tc)
+    list(APPEND CUBOOl_TARGETS cubool_mult cubool_add)
 
     foreach(CUBOOL_TARGET ${CUBOOl_TARGETS})
         target_link_libraries(${CUBOOL_TARGET} PUBLIC cubool)
@@ -130,7 +128,8 @@ if (BENCH_WITH_CLSPARSE)
         target_link_directories(${CLSPARSE_TARGET} PUBLIC ${clSPARSE_PATH}/library)
         target_include_directories(${CLSPARSE_TARGET} PUBLIC thirdparty/clSPARSE/src/include)
         target_include_directories(${CLSPARSE_TARGET} PUBLIC ${clSPARSE_PATH}/library)
-        target_link_options(${CLSPARSE_TARGET} PUBLIC "-l${clSPARSE_LIB_NAME}")
+        # Use link libraries command to provide extra libs in correct order (proposed by Nikita)
+        target_link_libraries(${CLSPARSE_TARGET} PUBLIC "-l${clSPARSE_LIB_NAME}")
 
         target_compile_features(${CLSPARSE_TARGET} PUBLIC cxx_std_11)
 
@@ -207,6 +206,3 @@ foreach(ARCHIVE_NAME ${DATASET_ARCHIVES})
             COMMENT "Unpacking benchmark dataset from ${ARCHIVE_NAME}"
             VERBATIM)
 endforeach()
-
-add_library(benchmark INTERFACE)
-add_dependencies(benchmark ${TARGETS} unzip_dataset)

@@ -31,25 +31,16 @@ using namespace benchmark;
 
 #define CUBOOL_CHECK(func) do { auto s = func; assert(s == CUBOOL_STATUS_SUCCESS); } while(0)
 
-static void messageCallback(CuBoolStatus status, const char* message, void* userData) {
-    std::cout << "= Cubool: Status: " << status << " Message: \"" << message << "\"" << std::endl;
-}
-
 int main(int argc, const char** argv) {
     ArgsProcessor argsProcessor;
     Matrix input;
 
     argsProcessor.parse(argc, argv);
 
-    CuBoolInstance instance = nullptr;
-    CuBoolMatrix matrix = nullptr;
-    CuBoolMatrix result = nullptr;
+    cuBool_Matrix matrix = nullptr;
+    cuBool_Matrix result = nullptr;
 
-    CuBoolInstanceDesc desc{};
-    desc.errorCallback = {nullptr, messageCallback };
-    desc.memoryType = CUBOOL_GPU_MEMORY_TYPE_MANAGED;
-
-    CUBOOL_CHECK(CuBool_Instance_New(&desc, &instance));
+    CUBOOL_CHECK(cuBool_Initialize(CUBOOL_HINT_NO));
 
     for (auto& entry: argsProcessor.getEntries()) {
         const auto& file = entry.name;
@@ -59,22 +50,22 @@ int main(int argc, const char** argv) {
         loader.loadData();
         input = std::move(loader.getMatrix());
 
-        CuBoolIndex_t n = input.nrows;
+        cuBool_Index n = input.nrows;
         assert(input.nrows == input.ncols);
 
-        CUBOOL_CHECK(CuBool_Matrix_New(instance, &matrix, n, n));
-        CUBOOL_CHECK(CuBool_Matrix_Build(instance, matrix, input.rows.data(), input.cols.data(), input.nvals));
+        CUBOOL_CHECK(cuBool_Matrix_New(&matrix, n, n));
+        CUBOOL_CHECK(cuBool_Matrix_Build(matrix, input.rows.data(), input.cols.data(), input.nvals, CUBOOL_HINT_NO));
 
-        CUBOOL_CHECK(CuBool_Matrix_New(instance, &result, input.nrows, input.nrows));
-        CUBOOL_CHECK(CuBool_MxM(instance, result, matrix, matrix));
+        CUBOOL_CHECK(cuBool_Matrix_New(&result, input.nrows, input.nrows));
+        CUBOOL_CHECK(cuBool_MxM(result, matrix, matrix, CUBOOL_HINT_NO));
 
-        CuBoolSize_t nvals;
-        CuBoolIndex_t nrows;
-        CuBoolIndex_t ncols;
+        cuBool_Index nvals;
+        cuBool_Index nrows;
+        cuBool_Index ncols;
 
-        CUBOOL_CHECK(CuBool_Matrix_Nrows(instance, result, &nrows));
-        CUBOOL_CHECK(CuBool_Matrix_Ncols(instance, result, &ncols));
-        CUBOOL_CHECK(CuBool_Matrix_Nvals(instance, result, &nvals));
+        CUBOOL_CHECK(cuBool_Matrix_Nrows(result, &nrows));
+        CUBOOL_CHECK(cuBool_Matrix_Ncols(result, &ncols));
+        CUBOOL_CHECK(cuBool_Matrix_Nvals(result, &nvals));
 
         std::cout << "Result matrix " << file << "2 : size: " << nrows << " x " << ncols << " nvals: " << nvals << std::endl;
 
@@ -85,19 +76,21 @@ int main(int argc, const char** argv) {
         m2.rows.resize(nvals);
         m2.cols.resize(nvals);
 
-        CUBOOL_CHECK(CuBool_Matrix_ExtractPairs(instance, result, m2.rows.data(), m2.cols.data(), &m2.nvals));
+        CUBOOL_CHECK(cuBool_Matrix_ExtractPairs(result, m2.rows.data(), m2.cols.data(), &nvals));
+
+        m2.nvals = nvals;
 
         MatrixWriter writer;
         writer.save(file + "2", m2);
 
-        CUBOOL_CHECK(CuBool_Matrix_Free(instance, result));
-        CUBOOL_CHECK(CuBool_Matrix_Free(instance, matrix));
+        CUBOOL_CHECK(cuBool_Matrix_Free(result));
+        CUBOOL_CHECK(cuBool_Matrix_Free(matrix));
 
         result = nullptr;
         matrix = nullptr;
     }
 
-    CUBOOL_CHECK(CuBool_Instance_Free(instance));
+    CUBOOL_CHECK(cuBool_Finalize());
 
     return 0;
 }
