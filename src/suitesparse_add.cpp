@@ -25,6 +25,7 @@
 #include <benchmark_base.hpp>
 #include <matrix_loader.hpp>
 #include <args_processor.hpp>
+#include <profile_mem.hpp>
 
 extern "C"
 {
@@ -32,6 +33,7 @@ extern "C"
 };
 
 #define BENCH_DEBUG
+#define PROFILE_MEM
 #define GrB_CHECK(func) do { auto s = func; assert(s == GrB_SUCCESS); } while(0);
 
 namespace benchmark {
@@ -44,6 +46,10 @@ namespace benchmark {
 
             benchmarkName = "SuiteSparse-Add";
             experimentsCount = argsProcessor.getExperimentsCount();
+        }
+
+        ~Add() {
+            output_mem_profile(benchmarkName + "-Mem.txt", argsProcessor.getInputString());
         }
 
     protected:

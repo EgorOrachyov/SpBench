@@ -45,6 +45,16 @@ namespace benchmark {
         };
 
         void parse(int argc, const char** argv) {
+            {
+                std::stringstream inpString;
+
+                for (int i = 0; i < argc; i++) {
+                    inpString << argv[i] << " ";
+                }
+
+                mAsString = inpString.str();
+            }
+
             assert(argc >= 2);
             mArgc = argc;
             mArgv = argv;
@@ -109,11 +119,16 @@ namespace benchmark {
             return mEntries.size();
         }
 
+        const std::string& getInputString() const {
+            return mAsString;
+        }
+
     private:
         int mArgc = 0;
         const char** mArgv = nullptr;
         bool mIsParsed = false;
         std::vector<Entry> mEntries;
+        std::string mAsString;
     };
 
 }

@@ -110,7 +110,7 @@ namespace benchmark {
                 return;
             }
 
-            clsparseCreateResult createResult = clsparseCreateControl( clCommandQueue( ) );
+            clsparseCreateResult createResult = clsparseCreateControl( clCommandQueue.operator()() );
             CLSPARSE_V( createResult.status, "Failed to create clsparse control" );
 
             control = createResult.control;

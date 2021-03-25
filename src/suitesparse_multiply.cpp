@@ -25,6 +25,7 @@
 #include <benchmark_base.hpp>
 #include <matrix_loader.hpp>
 #include <args_processor.hpp>
+#include <profile_mem.hpp>
 
 extern "C"
 {
@@ -44,6 +45,10 @@ namespace benchmark {
 
             benchmarkName = "SuiteSparse-Multiply";
             experimentsCount = argsProcessor.getExperimentsCount();
+        }
+
+        ~Multiply() {
+            output_mem_profile(benchmarkName + "-Mem.txt", argsProcessor.getInputString());
         }
 
     protected:
