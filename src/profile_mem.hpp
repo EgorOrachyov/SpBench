@@ -77,9 +77,9 @@ void output_mem_profile(const std::string& filename, const std::string& label) {
     double vm_usage, resident_set;
     process_mem_usage(vm_usage, resident_set);
 
-    s << "Label:" << label << std::endl
-      <<  "vm_usage: " << vm_usage << " KBs" << std::endl
-      << "resident_set: " << resident_set << " KBs" << std::endl;
+    s << "Label: " << label << std::endl
+      << " - vm_usage: " << vm_usage << " KBs ( " <<  vm_usage / 1000.0 << " MBs)" << std::endl
+      << " - resident_set: " << resident_set << " KBs ( " << resident_set / 1000.0 << " MBs)" << std::endl;
 
     s.close();
 }
