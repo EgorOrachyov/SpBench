@@ -231,7 +231,13 @@ namespace benchmark {
 }
 
 int main(int argc, const char** argv) {
-    benchmark::Multiply multiply(argc, argv);
-    multiply.runBenchmark();
+    try {
+        benchmark::Multiply multiply(argc, argv);
+        multiply.runBenchmark();
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Benchmark terminated unexpectedly. Error: " << e.what();
+    }
+
     return 0;
 }
