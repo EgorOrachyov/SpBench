@@ -35,6 +35,7 @@
 #include <unordered_set>
 #include <matrix.hpp>
 #include <exception>
+#include <cmath>
 
 namespace benchmark {
 
@@ -133,10 +134,40 @@ namespace benchmark {
             });
 
             loaded = true;
+
+            collectStats();
         }
 
         bool isLoaded() const {
             return loaded;
+        }
+
+        void collectStats() const {
+            size_t totalNnz = nvals;
+            double totalNnzPerRow = (double) totalNnz / (double) nrows;
+            size_t maxNnzRow = 0;
+
+            size_t currentMaxNnzRow = 0;
+            size_t currentRow = 0;
+
+            for (const auto & pair : pairs) {
+                auto r = pair.first;
+
+                if (r != currentRow) {
+                    maxNnzRow = std::max(currentMaxNnzRow, maxNnzRow);
+                    currentRow = r;
+                    currentMaxNnzRow = 1;
+                }
+                else {
+                    currentMaxNnzRow += 1;
+                }
+            }
+
+            std::cout << "Matrix file: " << path << std::endl
+                      << "Shape: " << nrows << "x" << ncols << std::endl
+                      << "Total Nnz: " << totalNnz << std::endl
+                      << "Total Nnz/Row: " << totalNnzPerRow << std::endl
+                      << "Max Nnz/Row: " << maxNnzRow << std::endl;
         }
 
         /** @return Converted read data to basic coo matrix */
