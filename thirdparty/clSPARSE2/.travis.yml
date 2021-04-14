@@ -1,0 +1,141 @@
+# Ubuntu name decoder ring; https://en.wikipedia.org/wiki/List_of_Ubuntu_releases
+# Ubuntu 12.04 LTS (Precise Pangolin) <== Travis CI VM image
+# Ubuntu 12.10 (Quantal Quetzal)
+# Ubuntu 13.04 (Raring Ringtail)
+# Ubuntu 13.10 (Saucy Salamander)
+# Ubuntu 14.04 LTS (Trusty Tahr)
+# Ubuntu 14.10 (Utopic Unicorn)
+# Ubuntu 15.04 (Vivid Vervet)
+# Ubuntu 15.10 (Wily Werewolf)
+# Ubuntu 16.04 LTS (Xenial Xantus)
+
+# os: expands the build matrix to include multiple os's
+os:
+  - linux
+  - osx
+
+# forces osx to be version 10.11 instead of default 10.9.5
+osx_image: xcode8
+
+# sudo: false instructs travis to build our project in a docker VM (faster),
+# but we cannot yet install fglrx packages with 'false'
+sudo: required # false
+dist: trusty
+
+# language: instructs travis what compilers && environment to set up in build matrix
+language: cpp
+
+# compiler: expands the build matrix to include multiple compilers (per os)
+compiler:
+  - gcc
+  - clang
+
+addons:
+  # apt: is disabled on osx builds
+  # apt: needed by docker framework to install project dependencies without
+  # sudo.  Apt uses published Ubunto PPA's from https://launchpad.net/
+  # https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
+  apt:
+    sources:
+      # ubuntu-toolchain-r-test contains newer versions of gcc to install
+      # - ubuntu-toolchain-r-test
+
+      # llvm-toolchain-precise-3.6 contains newer versions of clang to install
+      # - llvm-toolchain-precise-3.6
+    packages:
+      # The package opencl-headers on 'precise' only installs v1.1 cl headers; uncomment for 'trusty' or greater
+      - opencl-headers
+
+# env: specifies additional global variables to define per row in build matrix
+env:
+  global:
+    - CLSPARSE_ROOT=${TRAVIS_BUILD_DIR}/bin/make/release
+    - OPENCL_REGISTRY=https://www.khronos.org/registry/cl
+    - OPENCL_ROOT=${TRAVIS_BUILD_DIR}/bin/opencl
+
+# The following filters our build matrix; we are interested in linux-gcc & osx-clang
+matrix:
+  exclude:
+    - os: linux
+      compiler: clang
+    - os: osx
+      compiler: gcc
+
+before_install:
+  # Remove the following linux clause when fglrx can be installed with sudo: false
+  - if [ ${TRAVIS_OS_NAME} == "linux" ]; then
+      sudo apt-get update -qq &&
+      sudo apt-get install -qq libboost-all-dev;
+      export BUILD_BOOST="OFF";
+    fi
+  - if [ ${TRAVIS_OS_NAME} == "osx" ]; then
+      brew update;
+      brew install cmake;
+      brew outdated boost || brew upgrade boost;
+      brew outdated cmake || brew upgrade cmake;
+      export BUILD_BOOST="OFF";
+    fi
+#  - if [ ${CXX} = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+  - cmake --version;
+  - ${CC} --version;
+  - ${CXX} --version;
+
+install:
+  # osx image does not contain cl.hpp file; download from Khronos
+  - if [ ${TRAVIS_OS_NAME} == "osx" ]; then
+      pushd /System/Library/Frameworks/OpenCL.framework/Versions/A/Headers/;
+      sudo wget -w 1 -np -nd -nv -A h,hpp ${OPENCL_REGISTRY}/api/2.1/cl.hpp;
+      popd;
+    fi
+  # The following linux logic is necessary because of Travis's move to the GCE platform, which does not
+  # currently contain packages for fglrx: https://github.com/travis-ci/travis-ci/issues/5221
+  # We build our own linkable .so file
+  - if [ ${TRAVIS_OS_NAME} == "linux" ]; then
+      mkdir -p ${OPENCL_ROOT};
+      pushd ${OPENCL_ROOT};
+      travis_retry git clone --depth 1 https://github.com/KhronosGroup/OpenCL-ICD-Loader.git;
+      mv ./OpenCL-ICD-Loader/* .;
+      travis_retry git clone --depth 1 https://github.com/KhronosGroup/OpenCL-Headers.git inc/CL;
+      pushd inc/CL;
+      travis_retry wget -w 1 -np -nd -nv -A h,hpp ${OPENCL_REGISTRY}/api/2.1/cl.hpp;
+      popd;
+      mkdir -p lib;
+      pushd lib;
+      cmake -G "Unix Makefiles" ..;
+      make;
+      cp ./bin/libOpenCL.so .;
+      popd;
+      pushd inc/CL;
+      travis_retry git fetch origin opencl12:opencl12;
+      git checkout opencl12;
+      popd;
+      mv inc/ include/;
+      popd;
+    fi
+
+
+# Use before_script: to run configure steps
+before_script:
+  - mkdir -p ${CLSPARSE_ROOT}
+  - pushd ${CLSPARSE_ROOT}
+  - cmake -DCMAKE_BUILD_TYPE=Release -DclSPARSE_BUILD64=ON -DBUILD_Boost=${BUILD_BOOST} -DBUILD_gMock=ON -DBUILD_clSPARSE=ON -DBUILD_SAMPLES=ON ${TRAVIS_BUILD_DIR}
+
+# use script: to execute build steps
+script:
+  - make clSPARSE-samples
+  - cd clSPARSE-build
+  - make package
+  - popd
+
+deploy:
+  provider: releases
+  prerelease: true
+  draft: true
+  skip_cleanup: true
+  api_key:
+    secure: "Bx51QUNYPnJlkJS7D97huRxYzs26kOZst76S0uTmBWp8ZU7gAm6mY79pFbXW9mkL2r6EPX5l5p+pPOwo1kmN/eB3jicamA07oLcI0ZQw4XLxszVEiOLMNXSLFYnsee0RkVX4fu453XXOFDoQupN/JKHUtp4VReJHIiWgQPnvF3Xu7kBLGecKr9IrWV23ig+7z3oiTEO+MTIR/z9mmHnzdAf4K0Nh+9BdtI2QVuVbpRZxPRqLIakMHoYw18h2SdY44wYK+sC+AroU9QWCr5t26GJDzWdu0nrv05ChQqaC128z8+hs+jaPbx39ByBH3BxD05FrKtCO3W0O6VycHewFitrMeMCkXizDn3XzXRkw8bM8OpqFPW/++f5DqxgN+Yh9eIb2vY1QiBjaQ6VIvd/9egVILw6/cxVXlym9iNVwuO2ZG0COKMHoLP/2ZlvPbuoXYgEtZYqqUnvBHVu1SxzrABxR+Cp44McbuB2EFLHYxjA7msF/h+yilfE5e4FdD91MpjR26ASmP3rMx9xUe6h28rGgei3RXNNeF0vnMO65qwfImuUbQ3/on+KW6LlMKFptqq3Twp7wcBdh433bvsrwCW0BDP0eanWuImpS0z3reqcTJFrl0rzplpQmJAW38dcSWTI7MvlDKcMHLJMNy+2or7mIGCj1m9o9Yr6INC7W2Rg="
+  file_glob: true
+  file: ${CLSPARSE_ROOT}/clSPARSE-build/*.tar.gz
+  on:
+    all_branches: true
+    tags: true

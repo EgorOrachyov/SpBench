@@ -100,7 +100,7 @@ if (BENCH_WITH_CLSPARSE)
     set(BUILD_MTX ON CACHE BOOL "" FORCE)
     set(BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
     set(USE_SYSTEM_CL2HPP OFF CACHE BOOL "" FORCE)
-    add_subdirectory(thirdparty/clSPARSE)
+    add_subdirectory(thirdparty/clSPARSE2)
 
     set(CLSPARSE_TARGETS)
 
