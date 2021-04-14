@@ -108,7 +108,7 @@ if (BENCH_WITH_CLSPARSE)
     add_executable(clsparse_mult src/clsparse_multiply.cpp)
     list(APPEND CLSPARSE_TARGETS clsparse_basic clsparse_mult)
 
-    set(clSPARSE_PATH ${CMAKE_BINARY_DIR}/thirdparty/clSPARSE/clSPARSE-build)
+    set(clSPARSE_PATH ${CMAKE_BINARY_DIR}/thirdparty/clSPARSE2/clSPARSE-build)
     message(STATUS "${clSPARSE_PATH}/library")
 
     find_package(OpenCL REQUIRED)

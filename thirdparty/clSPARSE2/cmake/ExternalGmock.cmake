@@ -104,7 +104,7 @@ ExternalProject_Get_Property( gMock source_dir )
 set( packageDir "<INSTALL_DIR>/package" )
 
 set( gMockLibDir "<BINARY_DIR>/${LIB_DIR}" )
-set( gTestLibDir "<BINARY_DIR>/gtest/${LIB_DIR}" )
+set( gTestLibDir "<BINARY_DIR>/${LIB_DIR}" )
 if( MSVC_IDE OR XCODE_VERSION )
     # Create a package by bundling libraries and header files
     ExternalProject_Add_Step( gMock createPackage
@@ -122,7 +122,7 @@ else( )
       COMMAND ${CMAKE_COMMAND} -E copy_directory ${gMockLibDir} ${packageDir}/${LIB_DIR}
       COMMAND ${CMAKE_COMMAND} -E copy_directory ${gTestLibDir} ${packageDir}/${LIB_DIR}
       COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/include ${packageDir}/include
-      COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/gtest/include/gtest ${packageDir}/include/gtest
+      COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/include/gtest ${packageDir}/include/gtest
       DEPENDEES install
     )
 endif( )

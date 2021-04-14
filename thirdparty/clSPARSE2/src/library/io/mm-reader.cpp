@@ -120,7 +120,7 @@ public:
 
     char &GetTypecode( )
     {
-        return Typecode;
+        return *Typecode;
     }
 
     Coordinate<FloatType> *GetUnsymCoordinates( )
