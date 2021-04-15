@@ -1,6 +1,7 @@
 import subprocess
-import os
+import time
 import csv
+import os
 
 
 __all__ = [
@@ -19,7 +20,7 @@ class Profiler:
     How to use:
     >>> p = Profiler()
     >>> p.start()
-    >>> my_function_to_profile()
+    >>> # my_function_to_profile()
     >>> peak = p.stop() # This value show peak mem usage by your computation (in MiBs)
     """
 
@@ -41,6 +42,7 @@ class Profiler:
     def start(self):
         self.file = open(self.file_name, "w")
         self.process = subprocess.Popen(args=self.command, stdout=self.file)
+        time.sleep(1)
 
     def stop(self):
         self.process.terminate()
@@ -82,3 +84,9 @@ class Profiler:
     @property
     def memory_stat(self):
         return self.mem
+
+
+p = Profiler()
+p.start()
+p.stop()
+print(p.memory_stat)
