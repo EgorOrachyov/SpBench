@@ -42,7 +42,7 @@ class Profiler:
     def start(self):
         self.file = open(self.file_name, "w")
         self.process = subprocess.Popen(args=self.command, stdout=self.file)
-        time.sleep(1)
+        time.sleep(2)
 
     def stop(self):
         self.process.terminate()
@@ -69,13 +69,15 @@ class Profiler:
     def __find_peak(self):
         min_mem = 1e10
         max_mem = 0
+        samples = 0
 
         for _, m in self.data:
+            samples += 1
             min_mem = min(min_mem, m)
             max_mem = max(max_mem, m)
 
         self.peak = max_mem - min_mem
-        self.mem = {"max": max_mem, "min": min_mem, "usage peak": self.peak}
+        self.mem = {"max": max_mem, "min": min_mem, "usage peak": self.peak, "samples": samples}
 
     @property
     def usage_peak(self):
@@ -84,9 +86,3 @@ class Profiler:
     @property
     def memory_stat(self):
         return self.mem
-
-
-p = Profiler()
-p.start()
-p.stop()
-print(p.memory_stat)
