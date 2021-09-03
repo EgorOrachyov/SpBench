@@ -112,7 +112,7 @@ namespace benchmark {
         }
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
-            GrB_CHECK(GrB_mxm(R, nullptr, nullptr, GrB_LOR_LAND_SEMIRING_BOOL, A, A, nullptr));
+            GrB_CHECK(GrB_mxm(R, nullptr, nullptr, GxB_ANY_PAIR_BOOL, A, A, nullptr));
         }
 
         void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {

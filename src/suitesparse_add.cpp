@@ -98,7 +98,7 @@ namespace benchmark {
             }
 
             GrB_CHECK(GrB_Matrix_build_BOOL(A, I.data(), J.data(), X, input.nvals, GrB_FIRST_BOOL));
-            GrB_CHECK(GrB_mxm(A2, nullptr, nullptr, GrB_LOR_LAND_SEMIRING_BOOL, A, A, nullptr));
+            GrB_CHECK(GrB_mxm(A2, nullptr, nullptr, GxB_ANY_PAIR_BOOL, A, A, nullptr));
 
             std::free(X);
         }
@@ -117,7 +117,7 @@ namespace benchmark {
         }
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
-            GrB_CHECK(GrB_Matrix_eWiseAdd_BinaryOp(R, nullptr, nullptr, GrB_LOR, A, A2, nullptr));
+            GrB_CHECK(GrB_Matrix_eWiseAdd_Semiring(R, nullptr, nullptr, GxB_ANY_PAIR_BOOL, A, A2, nullptr));
         }
 
         void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
