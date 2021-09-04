@@ -36,14 +36,14 @@ extern "C"
 #define GrB_CHECK(func) do { auto s = func; assert(s == GrB_SUCCESS); } while(0);
 
 namespace benchmark {
-    class Multiply : public BenchmarkBase {
+    class Multiply: public BenchmarkBase {
     public:
 
         Multiply(int argc, const char** argv) {
             argsProcessor.parse(argc, argv);
             assert(argsProcessor.isParsed());
 
-            benchmarkName = "SuiteSparse-Multiply";
+            benchmarkName = "SuiteSparse-Multiply-AnyPair";
             experimentsCount = argsProcessor.getExperimentsCount();
         }
 
@@ -61,7 +61,7 @@ namespace benchmark {
             GrB_CHECK(GrB_finalize());
         }
 
-        void setupExperiment(size_t experimentIdx, size_t& iterationsCount, std::string& name) override {
+        void setupExperiment(size_t experimentIdx, size_t &iterationsCount, std::string& name) override {
             auto& entry = argsProcessor.getEntries()[experimentIdx];
 
             iterationsCount = entry.iterations;
@@ -75,8 +75,8 @@ namespace benchmark {
             input = std::move(loader.getMatrix());
 
 #ifdef BENCH_DEBUG
-            log << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
-                << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
+            log       << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
+                      << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
 
             size_t n = input.nrows;
@@ -87,7 +87,7 @@ namespace benchmark {
             std::vector<GrB_Index> I(input.nvals);
             std::vector<GrB_Index> J(input.nvals);
 
-            bool* X = (bool*)std::malloc(sizeof(bool) * input.nvals);
+            bool* X = (bool*) std::malloc(sizeof(bool) * input.nvals);
 
             for (auto i = 0; i < input.nvals; i++) {
                 I[i] = input.rows[i];
@@ -112,7 +112,7 @@ namespace benchmark {
         }
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
-            GrB_CHECK(GrB_mxm(R, nullptr, nullptr, GrB_LOR_LAND_SEMIRING_BOOL, A, A, nullptr));
+            GrB_CHECK(GrB_mxm(R, nullptr, nullptr, GxB_ANY_PAIR_BOOL, A, A, nullptr));
         }
 
         void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {

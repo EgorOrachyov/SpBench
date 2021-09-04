@@ -33,21 +33,22 @@ extern "C"
 };
 
 #define BENCH_DEBUG
+#define PROFILE_MEM
 #define GrB_CHECK(func) do { auto s = func; assert(s == GrB_SUCCESS); } while(0);
 
 namespace benchmark {
-    class Multiply : public BenchmarkBase {
+    class Add: public BenchmarkBase {
     public:
 
-        Multiply(int argc, const char** argv) {
+        Add(int argc, const char** argv) {
             argsProcessor.parse(argc, argv);
             assert(argsProcessor.isParsed());
 
-            benchmarkName = "SuiteSparse-Multiply";
+            benchmarkName = "SuiteSparse-Add-AnyPair";
             experimentsCount = argsProcessor.getExperimentsCount();
         }
 
-        ~Multiply() {
+        ~Add() {
             output_mem_profile(benchmarkName + "-Mem.txt", argsProcessor.getInputString());
         }
 
@@ -61,7 +62,7 @@ namespace benchmark {
             GrB_CHECK(GrB_finalize());
         }
 
-        void setupExperiment(size_t experimentIdx, size_t& iterationsCount, std::string& name) override {
+        void setupExperiment(size_t experimentIdx, size_t &iterationsCount, std::string& name) override {
             auto& entry = argsProcessor.getEntries()[experimentIdx];
 
             iterationsCount = entry.iterations;
@@ -75,19 +76,20 @@ namespace benchmark {
             input = std::move(loader.getMatrix());
 
 #ifdef BENCH_DEBUG
-            log << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
-                << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
+            log       << ">   Load matrix: \"" << file << "\" isUndirected: " << type << std::endl
+                      << "                 size: " << input.nrows << " x " << input.ncols << " nvals: " << input.nvals << std::endl;
 #endif // BENCH_DEBUG
 
             size_t n = input.nrows;
             assert(input.nrows == input.ncols);
 
             GrB_CHECK(GrB_Matrix_new(&A, GrB_BOOL, n, n));
+            GrB_CHECK(GrB_Matrix_new(&A2, GrB_BOOL, n, n));
 
             std::vector<GrB_Index> I(input.nvals);
             std::vector<GrB_Index> J(input.nvals);
 
-            bool* X = (bool*)std::malloc(sizeof(bool) * input.nvals);
+            bool* X = (bool*) std::malloc(sizeof(bool) * input.nvals);
 
             for (auto i = 0; i < input.nvals; i++) {
                 I[i] = input.rows[i];
@@ -96,6 +98,7 @@ namespace benchmark {
             }
 
             GrB_CHECK(GrB_Matrix_build_BOOL(A, I.data(), J.data(), X, input.nvals, GrB_FIRST_BOOL));
+            GrB_CHECK(GrB_mxm(A2, nullptr, nullptr, GxB_ANY_PAIR_BOOL, A, A, nullptr));
 
             std::free(X);
         }
@@ -104,7 +107,9 @@ namespace benchmark {
             input = Matrix{};
 
             GrB_CHECK(GrB_Matrix_free(&A));
+            GrB_CHECK(GrB_Matrix_free(&A2));
             A = nullptr;
+            A2 = nullptr;
         }
 
         void setupIteration(size_t experimentIdx, size_t iterationIdx) override {
@@ -112,7 +117,7 @@ namespace benchmark {
         }
 
         void execIteration(size_t experimentIdx, size_t iterationIdx) override {
-            GrB_CHECK(GrB_mxm(R, nullptr, nullptr, GrB_LOR_LAND_SEMIRING_BOOL, A, A, nullptr));
+            GrB_CHECK(GrB_Matrix_eWiseAdd_Semiring(R, nullptr, nullptr, GxB_ANY_PAIR_BOOL, A, A2, nullptr));
         }
 
         void tearDownIteration(size_t experimentIdx, size_t iterationIdx) override {
@@ -136,6 +141,7 @@ namespace benchmark {
     protected:
 
         GrB_Matrix A;
+        GrB_Matrix A2;
         GrB_Matrix R;
 
         ArgsProcessor argsProcessor;
@@ -145,7 +151,7 @@ namespace benchmark {
 }
 
 int main(int argc, const char** argv) {
-    benchmark::Multiply multiply(argc, argv);
-    multiply.runBenchmark();
+    benchmark::Add add(argc, argv);
+    add.runBenchmark();
     return 0;
 }

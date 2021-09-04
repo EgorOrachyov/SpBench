@@ -166,8 +166,10 @@ if (BENCH_WITH_SUITESPARSE)
     set(SUITESPARSE_TARGETS)
 
     add_executable(suitesparse_mult src/suitesparse_multiply.cpp)
+    add_executable(suitesparse_mult_any_pair src/suitesparse_multiply_any_pair.cpp)
     add_executable(suitesparse_add src/suitesparse_add.cpp)
-    list(APPEND SUITESPARSE_TARGETS suitesparse_mult suitesparse_add)
+    add_executable(suitesparse_add_any_pair src/suitesparse_add_any_pair.cpp)
+    list(APPEND SUITESPARSE_TARGETS suitesparse_mult suitesparse_mult_any_pair suitesparse_add suitesparse_add_any_pair)
 
     foreach(SUITESPARSE_TARGET ${SUITESPARSE_TARGETS})
         target_link_libraries(${SUITESPARSE_TARGET} PUBLIC sp_bench_base)

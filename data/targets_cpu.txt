@@ -1,2 +1,4 @@
 suitesparse_mult
 suitesparse_add
+suitesparse_mult_any_pair
+suitesparse_add_any_pair
